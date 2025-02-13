@@ -1,4 +1,7 @@
-<script setup lang="ts">
+<script 
+  setup 
+  lang="ts"
+>
 import { ref, shallowRef, onMounted, computed, reactive } from 'vue';
 import CustomTable from '@/components/CustomTable.vue';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -6,12 +9,12 @@ import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { postUserSelectionProcess } from '@/api/userSelection';
 import FilterForm from '@/components/shared/FilterForm.vue';
 import Loader from '@/components/shared/PageLoader.vue';
-import type { UserSelectionPayload, ApiResponse, StudyData } from '@/types/my-types/Journals';
+import type { ApiResponse, StudyData } from '@/types/my-types/Journals';
 
 const page = ref({ title: 'Journals' });
 const breadcrumbs = shallowRef([
   { title: 'Journal', disabled: false, href: '#' },
-  { title: 'Views', disabled: true, href: '#' },
+  { title: 'Views', disabled: true, href: '#' }
 ]);
 
 // State Variables
@@ -22,15 +25,15 @@ const headers = ref([
   { title: 'Authors', value: 'Authors', align: 'start', sortable: true },
   { title: 'Journal', value: 'Journal', align: 'start', sortable: true },
   { title: 'Source', value: 'Source', align: 'start', sortable: true },
-  { title: 'Year', value: 'Year', align: 'start', sortable: true },
+  { title: 'Year', value: 'Year', align: 'start', sortable: true }
   // { title: 'Actions', value: 'actions', align: 'end', sortable: false },
 ]);
 
 const snackbar = ref({
   visible: false,
-  message: "",
-  color: "error",
-  timeout: 3000,
+  message: '',
+  color: 'error',
+  timeout: 3000
 });
 
 const additionalFields = reactive<Array<{ column: string; value: string; type: string }>>([]);
@@ -40,9 +43,10 @@ const appliedFilters = ref<Record<string, string[]>>({});
 // Pagination Control
 const pagination = ref<ApiResponse['data']['pagination']>({
   current_page: 1,
+  page: 1,
   page_size: 10,
   total_pages: 0,
-  total_records: 0,
+  total_records: 0
 });
 
 // Computed property for filter
@@ -50,15 +54,21 @@ const filter = computed(() => {
   if (Object.keys(appliedFilters.value).length === 0) {
     return {
       user_selections: [],
-      additional_fields: [],
-      pagination: { page: pagination.value.current_page, page_size: pagination.value.page_size },
+      additional_fields: [] as { column: string; value: string; type: string }[],
+      pagination: {
+        current_page: pagination.value.current_page,
+        page: pagination.value.current_page,
+        page_size: pagination.value.page_size,
+        total_pages: pagination.value.total_pages,
+        total_records: pagination.value.total_records
+      },
       order_by: ['primary_id', 'ASC'],
-      export: null,
+      export: null as string | null
     };
   } else {
     return {
       ...appliedFilters.value,
-      export: null,
+      export: null
     };
   }
 });
@@ -66,12 +76,13 @@ const filter = computed(() => {
 // Fetch Data Using `postUserSelectionProcess`
 const fetchData = async () => {
   loading.value = true;
-  const payload: UserSelectionPayload = filter.value
-  filter.value["export"] = null;
+  const payload = filter.value;
+  filter.value['export'] = null;
   try {
-    const response: ApiResponse = await postUserSelectionProcess(payload);
+    const response = await postUserSelectionProcess(payload);
 
     // Assign `data` array to `items`
+    console.log(response);
     items.value = response.data.data;
 
     // Update pagination
@@ -86,9 +97,9 @@ const fetchData = async () => {
 // Download Data
 const download = async (file_type: string) => {
   loading.value = true;
-  filter.value["export"] = file_type;
+  filter.value['export'] = file_type;
 
-  const payload: UserSelectionPayload = filter.value;
+  const payload = filter.value;
   try {
     // Send the request
     const response = await postUserSelectionProcess(payload);
@@ -100,7 +111,7 @@ const download = async (file_type: string) => {
 
     // Create a link to download the file
     const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
@@ -110,7 +121,7 @@ const download = async (file_type: string) => {
     // Revoke the URL to free memory
     window.URL.revokeObjectURL(url);
   } catch (err: unknown) {
-    console.error("Error fetching data:", (err as Error).message || "Unknown error");
+    console.error('Error fetching data:', (err as Error).message || 'Unknown error');
   } finally {
     loading.value = false;
   }
@@ -119,27 +130,27 @@ const download = async (file_type: string) => {
 // Helper functions
 const getFileMimeType = (file_type: string): string => {
   switch (file_type) {
-    case "csv":
-      return "text/csv";
-    case "excel":
-      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    case "json":
-      return "application/json";
+    case 'csv':
+      return 'text/csv';
+    case 'excel':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case 'json':
+      return 'application/json';
     default:
-      throw new Error("Unsupported file type");
+      throw new Error('Unsupported file type');
   }
 };
 
 const getFileExtension = (file_type: string): string => {
   switch (file_type) {
-    case "csv":
-      return "csv";
-    case "excel":
-      return "xlsx";
-    case "json":
-      return "json";
+    case 'csv':
+      return 'csv';
+    case 'excel':
+      return 'xlsx';
+    case 'json':
+      return 'json';
     default:
-      throw new Error("Unsupported file type");
+      throw new Error('Unsupported file type');
   }
 };
 
@@ -147,30 +158,30 @@ const getFileExtension = (file_type: string): string => {
 const handlePageChange = (page: number) => {
   pagination.value.current_page = page;
   if (filter.value && Object.keys(filter.value).length > 0) {
-    filter.value.pagination.page = page
+    pagination.value.page = page;
   }
   fetchData();
 };
 
-const showToast = (message: string, color = "success", timeout = 3000) => {
+const showToast = (message: string, color = 'success', timeout = 3000) => {
   snackbar.value.message = message;
   snackbar.value.color = color;
   snackbar.value.timeout = timeout;
   snackbar.value.visible = true;
 };
 
-const addField = (column:string, value:string) => {
-  additionalFields.push({ column, value, type: "likewhere" });
+const addField = (column: string, value: string) => {
+  additionalFields.push({ column, value, type: 'likewhere' });
 };
 
-const handleTitleSearch = (searchText:string) => {
-  let text = searchText.target.value
+const handleTitleSearch = (searchText: Event) => {
+  const text = (searchText.target as HTMLInputElement).value;
   if (text.length <= 5) {
-    showToast("Search text must be more than 5 characters.", "error");
+    showToast('Search text must be more than 5 characters.', 'error');
   } else {
-    showToast("Search successful!", "success");
-    addField("Title", text)
-    filter.value.additional_fields = additionalFields
+    showToast('Search successful!', 'success');
+    addField('Title', text);
+    filter.value.additional_fields = additionalFields;
     fetchData();
   }
 };
@@ -179,19 +190,19 @@ const handlePageSizeChange = (pageSize: number) => {
   pagination.value.page_size = pageSize;
   pagination.value.current_page = pagination.value.current_page ? pagination.value.current_page : 1;
   if (filter.value && Object.keys(filter.value).length > 0) {
-    filter.value.pagination.page_size = pageSize
+    pagination.value.page_size = pageSize;
   }
   fetchData();
 };
 
 // Handle Actions
-const editItem = (item: StudyData) => {
-  console.log('Edit:', item);
-};
+// const editItem = (item: StudyData) => {
+//   console.log('Edit:', item);
+// };
 
 const handleUpdateFilters = (filters: Record<string, string[]>) => {
   appliedFilters.value = filters;
-  fetchData()
+  fetchData();
 };
 
 // Fetch Data on Component Mount
@@ -207,10 +218,19 @@ onMounted(fetchData);
         <v-snackbar v-model="snackbar.visible" :color="snackbar.color" :timeout="snackbar.timeout">
           {{ snackbar.message }}
         </v-snackbar>
-        <FilterForm @updateFilters="handleUpdateFilters" style="float:right;"/>
+        <FilterForm @updateFilters="handleUpdateFilters" style="float: right" />
         <!-- Custom Table -->
-        <CustomTable title="Search Items" :items="items" :headers="headers" :loading="loading" :pagination="pagination"
-          @update:page="handlePageChange" @search:title="handleTitleSearch" @update:items-per-page="handlePageSizeChange" @download:file="download">
+        <CustomTable
+          title="Search Items"
+          :items="items"
+          :headers="headers"
+          :loading="loading"
+          :pagination="pagination"
+          @update:page="handlePageChange"
+          @search:title="handleTitleSearch"
+          @update:items-per-page="handlePageSizeChange"
+          @download:file="download"
+        >
           <!-- Actions Slot -->
           <!-- <template v-slot:actions="{ item }">
             <v-btn text color="primary" @click="editItem(item)">View</v-btn>

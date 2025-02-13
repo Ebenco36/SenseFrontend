@@ -15,11 +15,11 @@ export interface ApiRequestConfig {
 
 export interface ApiResponse<T = unknown> {
   data: T; // Generic data type for the response payload
-  message: string;
-  status: number;
+  message?: string;
+  status?: number;
 }
 
-export const apiService = async <T = unknown>(config: ApiRequestConfig): Promise<ApiResponse<T>> => {
+export const apiService = async (config: ApiRequestConfig) => {
   const { path, method, data, params, headers } = config;
 
   const requestConfig: AxiosRequestConfig = {
@@ -27,14 +27,22 @@ export const apiService = async <T = unknown>(config: ApiRequestConfig): Promise
     method,
     data,
     params,
-    headers,
+    headers
   };
 
   try {
-    const response: AxiosResponse<ApiResponse<T>> = await httpService.request(requestConfig);
+    const response: AxiosResponse = await httpService.request(requestConfig);
     return response.data;
-  } catch (error: any) {
-    console.error(`Error in API call to ${path}:`, error);
-    throw new Error(error.response?.data?.message || 'Unknown error');
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const errObj = error as { response?: { data?: { message?: string } } };
+      throw new Error(errObj.response?.data?.message || 'Unknown error');
+    }
+
+    throw new Error('Unknown error occurred');
   }
 };

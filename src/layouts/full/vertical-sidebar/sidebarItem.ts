@@ -6,7 +6,7 @@ import {
   // PaletteIcon,
   // KeyIcon,
   // BugIcon,
-  DashboardIcon,
+  DashboardIcon
   // BrandChromeIcon,
   // HelpIcon
 } from 'vue-tabler-icons';
@@ -48,7 +48,7 @@ const sidebarItem: menu[] = [
     title: 'About Us',
     icon: DashboardIcon,
     to: '/about-us'
-  },
+  }
   // { divider: true },
   // { header: 'Pages' },
   // {

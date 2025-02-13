@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Google from '@/assets/images/auth/social-google.svg';
+// import Google from '@/assets/images/auth/social-google.svg';
 const checkbox = ref(false);
 const show1 = ref(false);
 const password = ref('');
@@ -20,7 +20,6 @@ function validate() {
 </script>
 
 <template>
-  
   <h5 class="text-h5 text-center my-4 mb-8">Sign up with Email address</h5>
   <v-form ref="Regform" lazy-validation action="/dashboards/analytical" class="mt-7 loginForm">
     <v-row>

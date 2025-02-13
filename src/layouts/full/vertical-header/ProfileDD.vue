@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { SettingsIcon, LogoutIcon, UserIcon } from 'vue-tabler-icons';
+// import { ref } from 'vue';
+import { SettingsIcon, LogoutIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/stores/auth';
 
-const swt1 = ref(true);
-const swt2 = ref(false);
 const authStore = useAuthStore();
 </script>
 
@@ -16,7 +14,6 @@ const authStore = useAuthStore();
     <h4 class="mb-n1">Good Morning, <span class="font-weight-regular">John Doe</span></h4>
 
     <perfect-scrollbar style="height: calc(100vh - 300px); max-height: fit-content">
-
       <v-list class="mt-3">
         <v-list-item color="secondary" rounded="md">
           <template v-slot:prepend>

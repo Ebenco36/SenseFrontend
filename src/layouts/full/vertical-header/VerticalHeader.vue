@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+// import { ref } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 // Icon Imports
-import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
+import { SettingsIcon, Menu2Icon } from 'vue-tabler-icons';
 
 import ProfileDD from './ProfileDD.vue';
-import Searchbar from './SearchBarPanel.vue';
+// import Searchbar from './SearchBarPanel.vue';
 
 const customizer = useCustomizerStore();
-const showSearch = ref(false);
-function searchbox() {
-  showSearch.value = !showSearch.value;
-}
+// const showSearch = ref(false);
+// function searchbox() {
+//   showSearch.value = !showSearch.value;
+// }
 </script>
 
 <template>
@@ -76,7 +76,6 @@ function searchbox() {
     <v-menu :close-on-content-click="false">
       <template v-slot:activator="{ props }">
         <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
-          
           <SettingsIcon stroke-width="1.5" />
         </v-btn>
       </template>

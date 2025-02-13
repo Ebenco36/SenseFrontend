@@ -1,0 +1,12 @@
+docker build -t sense_frontend .
+
+docker tag mpvisualization:latest ebenco36/mpvis_frontend:latest
+
+docker push ebenco36/mpvis_frontend:latest
+
+python3 -m http.server 8081
+
+
+npx prettier --write .
+npx eslint --fix .
+npx tsc --noEmit

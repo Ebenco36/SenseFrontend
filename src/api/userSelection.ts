@@ -1,25 +1,20 @@
 // src/api/userSelection.ts
-
 import { apiService } from '@/utils/apiService';
-import type { UserSelectionPayload, ApiResponse } from '@/types/my-types/Journals';
 
-export const postUserSelectionProcess = async (
-  data: UserSelectionPayload
-): Promise<ApiResponse> => {
-  return apiService({
+export const postUserSelectionProcess = async (data: object) => {
+  const response = apiService({
     path: '/user-selection-process',
     method: 'POST',
-    data,
+    data
   });
+  return response;
 };
 
 // Example for GET method
-export const fetchUserSelectionProcess = async (
-  params: Record<string, unknown>
-): Promise<ApiResponse> => {
+export const fetchUserSelectionProcess = async (params: Record<string, unknown>) => {
   return apiService({
     path: '/user-selection-process',
     method: 'GET',
-    params,
+    params
   });
 };

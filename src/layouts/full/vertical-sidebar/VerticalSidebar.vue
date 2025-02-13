@@ -6,7 +6,7 @@ import sidebarItems from './sidebarItem';
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
-import Logo from '../logo/LogoMain.vue';
+// import Logo from '../logo/LogoMain.vue';
 
 const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
@@ -28,7 +28,7 @@ const sidebarMenu = shallowRef(sidebarItems);
 
     <div class="pa-5">
       <!-- <Logo /> -->
-      <b style="font-weight: bolder;">Sense Logo</b>
+      <b style="font-weight: bolder">Sense Logo</b>
     </div>
     <!-- ---------------------------------------------- -->
     <!---Navigation -->

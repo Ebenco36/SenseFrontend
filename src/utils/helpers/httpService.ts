@@ -9,14 +9,14 @@ const contentType = import.meta.env.VITE_API_CONTENT_TYPE as string;
 const httpService: AxiosInstance = axios.create({
   baseURL,
   headers: {
-    'Content-Type': contentType,
-  },
+    'Content-Type': contentType
+  }
 });
 
 // Interceptor to handle errors globally if needed
 httpService.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     console.error('API Error:', error);
     return Promise.reject(error);
   }

@@ -21,7 +21,6 @@ const footerLink = shallowRef([
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
         <p class="text-body-1 mb-0 text-sm-left text-center">
-          Sense Project Team
           <a href="https://" class="text-darkText text-decoration-none" target="_blank">SenseProject</a>
         </p>
       </v-col>
