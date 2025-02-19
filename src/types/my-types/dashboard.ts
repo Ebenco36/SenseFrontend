@@ -14,13 +14,25 @@ export interface SourceRecord extends Record {
   Source: string;
 }
 
+export interface ChartsRecord extends Record {
+  Charts: string;
+}
+
+export interface OVIDRecord extends Record {
+  OVID: string;
+  Database: string;
+}
+
 export interface DataStructure {
   country: CountryRecord[];
   journal: JournalRecord[];
   source: SourceRecord[];
+  ovid_grouping: OVIDRecord[];
+  charts: ChartsRecord[];
 }
 
 export interface dataType {
+[x: string]: any;
   data: DataStructure;
   status: string;
 }

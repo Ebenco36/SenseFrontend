@@ -6,6 +6,10 @@ const props = defineProps({
     type: String,
     default: 'false'
   },
+  summary_text: {
+    type: String,
+    default: ''
+  },
   value: {
     type: String,
     default: '0'
@@ -38,14 +42,12 @@ const dynamicClass = computed(() => {
   <v-card elevation="0" :class="dynamicClass">
     <v-card-text>
       <div class="d-flex align-start mb-6">
-        <v-btn icon rounded="sm" :color="btnColor" variant="flat">
-          <img :src="iconCard" width="25" />
-        </v-btn>
       </div>
       <h2 class="text-h1 font-weight-medium">
         {{ value }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
       </h2>
       <span class="text-subtitle-1 text-medium-emphasis text-white">{{ text }}</span>
+      <small class="pull-right" v-if="text == 'OVID'" v-html="summary_text"></small>
     </v-card-text>
   </v-card>
 </template>

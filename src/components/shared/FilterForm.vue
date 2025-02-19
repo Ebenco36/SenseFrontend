@@ -21,32 +21,33 @@
               <div v-for="(categories, categoryKey) in filters.tag_filters" :key="categoryKey" class="category">
                 <h3>{{ replaceWithMapper(categoryKey, categoryKey) }}</h3>
                 <div class="add-text">
-                  <input
-                    type="text"
-                    v-model="newCategoryText[categoryKey]"
-                    placeholder="Add custom item and press Enter"
-                    @keydown.enter="addTextToCategory(categoryKey)"
-                  />
+                  <input type="text" v-model="newCategoryText[categoryKey]"
+                    placeholder="Add custom item and press Enter" @keydown.enter="addTextToCategory(categoryKey)" />
                 </div>
                 <div class="groups-container">
                   <div v-for="(group, groupKey) in categories" :key="groupKey" class="group">
-                    <small v-if="isPopulationOrIntervention(categoryKey)">
+                    <small 
+                      v-if="isPopulationOrIntervention(categoryKey)" 
+                      style="
+                        background-color: grey; 
+                        padding: 5px; 
+                        color:white; 
+                        width: fit-content; 
+                        margin-bottom: 20px!important;
+                      "
+                    >
                       {{ replaceWithMapper(groupKey, groupKey) }}
                     </small>
                     <div class="options-container">
                       <div v-for="(option, optionKey) in group" :key="optionKey" class="option">
                         <label>
-                          <input
-                            type="checkbox"
-                            :checked="
-                              selectedFilters.includes(String(option.display)) ||
-                              (option.synonyms ?? []).some((synonym) => selectedFilters.includes(synonym))
-                            "
-                            @change="toggleOption(option, $event.target.checked)"
-                          />
+                          <input type="checkbox" :checked="selectedFilters.includes(String(option.display)) ||
+                            (option.synonyms ?? []).some((synonym) => selectedFilters.includes(synonym))
+                            " @change="toggleOption(option, $event.target.checked)" />
                           {{ replaceWithMapper(option.display, option.display) }}
                         </label>
-                        <span v-if="option.isUserAdded" class="remove-button" @click="removeOption(categoryKey, groupKey, optionKey)">
+                        <span v-if="option.isUserAdded" class="remove-button"
+                          @click="removeOption(categoryKey, groupKey, optionKey)">
                           ×
                         </span>
                       </div>
@@ -59,34 +60,22 @@
               <div v-for="(items, otherKey) in filters.others" :key="otherKey" class="category">
                 <h3>{{ otherKey.charAt(0).toUpperCase() + otherKey.slice(1) }}</h3>
                 <div class="add-text">
-                  <input
-                    type="text"
-                    v-model="newOtherText[otherKey]"
-                    placeholder="Add custom item and press Enter"
-                    @keydown.enter="addTextToOther(otherKey)"
-                  />
+                  <input type="text" v-model="newOtherText[otherKey]" placeholder="Add custom item and press Enter"
+                    @keydown.enter="addTextToOther(otherKey)" />
                 </div>
                 <div class="options-container">
                   <div v-for="(item, index) in items" :key="index" class="option">
                     <label>
-                      <input
-                        type="checkbox"
-                        :checked="selectedFilters.includes(item)"
-                        @change="toggleOption({ display: item }, $event.target.checked)"
-                      />
+                      <input type="checkbox" :checked="selectedFilters.includes(item)"
+                        @change="toggleOption({ display: item }, $event.target.checked)" />
                       {{ item }}
                     </label>
-                    <span v-if="isCustomOtherItem(item, otherKey)" class="remove-button" @click="removeOtherItem(otherKey, index)">
+                    <span v-if="isCustomOtherItem(item, otherKey)" class="remove-button"
+                      @click="removeOtherItem(otherKey, index)">
                       ×
                     </span>
                   </div>
                 </div>
-                <!-- <span
-                                    v-if="items.length > showMore[otherKey]"
-                                    @click="loadMoreItems(otherKey)"
-                                >
-                                    Load More >
-                                </span> -->
               </div>
             </div>
 
@@ -99,17 +88,24 @@
                     <div v-for="(field, index) in additionalFields" :key="index" class="field-row">
                       <select v-model="field.column" style="width: 100% !important">
                         <option selected="true">Select field</option>
-                        <option v-for="column in orderColumns" :key="column" :value="column">
-                          {{ column }}
+                        <option v-for="value in orderColumns" :key="value.key" :value="value.key">
+                          {{ value.value }}
                         </option>
                       </select>
+                      
                       <input type="text" v-model="field.value" placeholder="Value" />
                       <select v-model="field.type">
                         <option value="likewhere">Like Where</option>
                         <option value="orlikewhere">Or Like Where</option>
                       </select>
-                      <button v-if="index" type="button" @click="removeField(index)">Remove</button>
-                      <button type="button" @click="addField" v-if="index === additionalFields.length - 1">Add</button>
+                      <v-btn v-if="index" type="button" @click="removeField(index)">
+                        <MinusIcon size="20" stroke-width="1.5" />
+                        <!-- Remove -->
+                      </v-btn>
+                      <v-btn type="button" @click="addField" v-if="index === additionalFields.length - 1"> 
+                        <PlusIcon size="20" stroke-width="1.5" />
+                        <!-- Add -->
+                      </v-btn>
                     </div>
                   </div>
                 </v-col>
@@ -120,17 +116,17 @@
                 <v-col>
                   <h3>Order By</h3>
                   <v-row>
-                    <v-col cols="6" class="field-row-2nd">
+                    <v-col cols="2" sm="6" md="4" lg="2" xl="2" class="field-row-2nd">
                       <label>
                         Column:
                         <select v-model="orderBy.column" style="width: 100% !important">
-                          <option v-for="column in orderColumns" :key="column" :value="column">
-                            {{ column }}
+                          <option v-for="value in orderColumns" :key="value.key" :value="value.key">
+                            {{ value.value }}
                           </option>
                         </select>
                       </label>
                     </v-col>
-                    <v-col cols="6" class="field-row-2nd">
+                    <v-col cols="2" sm="6" md="4" lg="2" xl="2" class="field-row-2nd">
                       <label>
                         Direction:
                         <select v-model="orderBy.direction" style="width: 100% !important">
@@ -146,8 +142,8 @@
 
             <!-- Modal Footer Buttons -->
             <div class="d-flex justify-end mt-3">
-              <v-btn text color="primary" @click="closeModal" class="mr-2"> Close </v-btn>
-              <v-btn color="primary" type="submit">Search</v-btn>
+              <v-btn @click="closeModal" class="mr-2"> Close </v-btn>
+              <v-btn type="submit">Search</v-btn>
             </div>
           </form>
         </v-card-text>
@@ -160,7 +156,8 @@
 import { ref, reactive, onMounted, defineEmits, onBeforeUnmount } from 'vue';
 import { fetchFilters } from '@/api/filters';
 import type { FiltersData, FilterOption } from '@/types/my-types/filters';
-import {SearchIcon} from 'vue-tabler-icons';
+import { SearchIcon, PlusIcon, MinusIcon } from 'vue-tabler-icons';
+import { mapper } from '@/services/index.js';
 // Emits
 const emit = defineEmits(['updateFilters']);
 
@@ -185,7 +182,14 @@ const selectedFilters = ref<string[]>([]);
 const newCategoryText = reactive<Record<string, string>>({});
 const newOtherText = reactive<Record<string, string>>({});
 const additionalFields = reactive([{ column: '', value: '', type: 'likewhere' }]);
-const orderColumns = ['Title', 'Author', 'Date', 'Primary ID'];
+const orderColumns = [
+  {'key': 'Title', 'value': 'By Title'}, 
+  {'key': 'Author', 'value': 'By Author'}, 
+  {'key': 'Abstract', 'value': 'By Abstract'}, 
+  {'key': 'Journal', 'value': 'By Journal'}, 
+  {'key': 'verification_id', 'value': 'By ID'}
+  // 'Date', 'Primary ID'
+];
 const orderBy = reactive({ column: 'primary_id', direction: 'ASC' });
 const customOthers = reactive<Record<string, Set<string>>>({});
 // Mapping for `others` fields to specific column names and types
@@ -196,104 +200,9 @@ const columnMapping: Record<string, { column: string; type: string }> = {
   regions: { column: 'Region', type: 'likewhere' }
 };
 
-// Define mapper for renaming
-const mapper = {
-  aden: 'Adenovirus (aden)',
-  intervention: 'Intervention',
-  outcome: 'Outcome',
-  popu: 'Population',
-  topic: 'Topic',
-  reviews: 'Reviews',
-  studies: 'Studies',
-  particip: 'Participants',
-  lit_search_dates: 'Literature Search Dates',
-  CustomGroup: 'Custom Group',
-  rev: 'Review Type',
-  age__group: 'Age Group',
-  vaccine__options: 'Age Group',
-  live: 'Live',
-  vpd: 'Age Group',
-  covid: 'Covid-19',
-  deng: 'Dengue (deng)',
-  diph: 'Diphtheria (diph)',
-  hib: 'Haemophilus influenzae type b',
-  ha: 'Hepatitis A (ha)',
-  hb: 'Hepatitis B (hb)',
-  hc: 'Hepatitis C (hc)',
-  he: 'Hepatitis E (he)',
-  hs: 'Herpes simplex (hs)',
-  hz: 'Shingles, Herpes zoster (hz)',
-  hiv: 'HIV/AIDS (hiv)',
-  hpv: 'Human papillomavirus (HPV)',
-  infl: 'Influenza (infl)',
-  je: 'Japanese encephalitis (je)',
-  leis: 'Leishmaniasis (leis)',
-  lyme: 'Borreliosis (Lyme)',
-  mala: 'Malaria (mala)',
-  meas: 'Measles (meas)',
-  meni: 'Meningococcal (meni)',
-  mump: 'Mumps',
-  myle: 'Leprosy (myle)',
-  myva: 'Mycobacterium vaccae (myva)',
-  pert: 'Pertussis (pert)',
-  plag: 'Plague (plag)',
-  pneu: 'Pneumococcal (pneu)',
-  poli: 'Poliomyelitis (poli)',
-  pseu: 'Pseudomonas aeruginosa (psue)',
-  rabi: 'Rabies (rabi)',
-  rota: 'Rotavirus (rota)',
-  rsv: 'Respiratory syncytial virus (RSV)',
-  rube: 'Rubella (rube)',
-  salm: 'Salmonella (salm)',
-  shig: 'Shigella (shig)',
-  smal: 'Smallpox (smal)',
-  strb: 'Streptococcus group B (strb)',
-  tt: 'Tetanus (tt)',
-  tbe: 'Tick-borne encephalitis (tbe)',
-  tetanus: 'Tetanus',
-  tb: 'Tuberculosis (tb)',
-  typh: 'Typhoid (typh)',
-  vari: 'Varicella (Chickenpox)',
-  yf: 'Yellow fever (yf)',
-  zika: 'Zika',
-  anth: 'Anthrax (anth)',
-  camp: 'Campylobacter (camp)',
-  chol: 'Cholera (chol)',
-  coxi: 'Q fever (coxi)',
-  ebol: 'Ebola (ebol)',
-  ente: 'Enterovirus (ente)',
-  esch: 'Escherichia coli (ETEC)',
-  ado_10__17: 'Adolescents (10-18 years)',
-  adu_18__64: 'Adults (18+)',
-  chi_2__9: 'Children (2-9 years)',
-  eld_65__10000: 'Elderly (65+)',
-  nb_0__1: 'Newborn (0-1 years)',
-  immune__status: 'Immune Status',
-  specific__group: 'Specific Group',
-  hty: 'Healthy',
-  hcw: 'Healthcare Workers (hcw)',
-  pcg: 'Parents/Caregivers (cg)',
-  pw: 'Pregnant Women (pw)',
-  tra: 'Travellers (tra)',
-  rf: 'Risk Factor (rf)',
-  va: 'Vaccine/Vaccination (va)',
-  kaa: 'Acceptance (kaa)',
-  dea: 'Death (dea)',
-  hos: 'hospitalization (hos)',
-  icu: 'ICU',
-  inf: 'Infection (inf)',
-  eff: 'Efficacy/Effectiveness (eff)',
-  adm: 'Administration (adm)',
-  cov: 'Coverage (cov)',
-  eco: 'Economic Aspects (eco)',
-  eth: 'Ethical Issues (eth)',
-  log: 'Logistics (log)',
-  mod: 'Modeling (mod)',
-  saf: 'Safety (saf)'
-};
-
 // Helper method for renaming categories or options
 const replaceWithMapper = (key: keyof typeof mapper, name: string) => {
+  console.log(name)
   return mapper[key] ?? name.replace(/_/g, ' ');
 };
 

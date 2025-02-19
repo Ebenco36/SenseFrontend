@@ -176,8 +176,8 @@ const addField = (column: string, value: string) => {
 
 const handleTitleSearch = (searchText: Event) => {
   const text = (searchText.target as HTMLInputElement).value;
-  if (text.length <= 5) {
-    showToast('Search text must be more than 5 characters.', 'error');
+  if (text.length <= 2) {
+    showToast('Search text must be more than 2 characters.', 'error');
   } else {
     showToast('Search successful!', 'success');
     addField('Title', text);
@@ -194,11 +194,6 @@ const handlePageSizeChange = (pageSize: number) => {
   }
   fetchData();
 };
-
-// Handle Actions
-// const editItem = (item: StudyData) => {
-//   console.log('Edit:', item);
-// };
 
 const handleUpdateFilters = (filters: Record<string, string[]>) => {
   appliedFilters.value = filters;
@@ -231,11 +226,6 @@ onMounted(fetchData);
           @update:items-per-page="handlePageSizeChange"
           @download:file="download"
         >
-          <!-- Actions Slot -->
-          <!-- <template v-slot:actions="{ item }">
-            <v-btn text color="primary" @click="editItem(item)">View</v-btn>
-            <v-btn text color="error" @click="deleteItem(item)">Delete</v-btn>
-          </template> -->
         </CustomTable>
       </UiParentCard>
     </v-col>

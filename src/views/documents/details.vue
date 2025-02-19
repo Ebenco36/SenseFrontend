@@ -1,24 +1,5 @@
 <template>
   <div class="meta-analysis-page">
-    <!-- Header -->
-    <!-- <v-row class="py-4">
-            <span>
-                <v-col>
-                    <v-breadcrumbs class="mb-2">
-                        <v-breadcrumbs-item href="#">
-                            SYSVAC AI:
-                        </v-breadcrumbs-item>
-                        <v-breadcrumbs-item href="#">{{ journalInformation?.Title }}</v-breadcrumbs-item>
-                    </v-breadcrumbs> 
-                    <h1 class="font-weight-bold">
-                        SYSVAC AI: {{ journalInformation?.Title }}
-                    </h1>
-                </v-col>
-            </span>
-        </v-row> -->
-
-    <!-- Main Content -->
-    <!-- <v-container> -->
     <v-row>
       <!-- Abstract Section -->
       <v-col cols="12" md="9">
@@ -27,14 +8,10 @@
             <h1 class="font-weight-bold" style="color: white">
               {{ journalInformation?.Title }}
             </h1>
-            <span style="font-size: 12pt; float: right">Publication year: {{ Number(journalInformation?.Year) ? Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date) }}</span>
-            <v-card-title class="font-weight-bold">  </v-card-title>
+            <span style="font-size: 12pt; float: right">Publication year: {{ Number(journalInformation?.Year) ?
+              Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date) }}</span>
+            <v-card-title class="font-weight-bold"> </v-card-title>
           </v-col>
-
-          <!-- <v-card-text>
-            <p>{{ journalInformation?.Abstract }}</p>
-          </v-card-text> -->
-
           <v-card-text>
             <v-row>
               <v-col cols="6" md="6">
@@ -67,23 +44,21 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Study Types: {{ formattedStudies }}</v-list-item-title>
-                    <v-list-item-title>Country Distribution: {{ journalInformation?.study_country__HASH__countries__HASH__countries ? journalInformation?.study_country__HASH__countries__HASH__countries : "Nill" }}</v-list-item-title>
-                    <v-list-item-title>Sample size: {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }}</v-list-item-title>
-                    <v-list-item-title>Population health status: {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }}</v-list-item-title>
+                    <v-list-item-title>Country Distribution: {{
+                      journalInformation?.study_country__HASH__countries__HASH__countries ?
+                        journalInformation?.study_country__HASH__countries__HASH__countries : "Nill"
+                      }}</v-list-item-title>
+                    <v-list-item-title>Sample size: work in progress...
+                      <!-- {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }} -->
+                    </v-list-item-title>
+                    <v-list-item-title>Population health status: Pregnant Women
+                      <!-- {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }} -->
+                    </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
             </v-row>
           </v-card-text>
-
-          <!-- <v-card-actions v-for="(values, group) in groupedData" :key="group">
-            {{ replaceWithMapper(group, group) }}
-            <v-chip-group>
-              <v-chip class="ma-1" outlined v-for="item in values" :key="item">
-                {{ replaceWithMapper(item, item) }}
-              </v-chip>
-            </v-chip-group>
-          </v-card-actions> -->
         </v-card>
       </v-col>
 
@@ -139,7 +114,8 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Literature search date:</v-list-item-title>
-                  <v-list-item-subtitle>{{ journalInformation?.lit_search_dates__HASH__dates__HASH__dates }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ journalInformation?.lit_search_dates__HASH__dates__HASH__dates
+                    }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -153,7 +129,8 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Publication year:</v-list-item-title>
-                  <v-list-item-subtitle>{{ Number(journalInformation?.Year) ? Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date) }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ Number(journalInformation?.Year) ? Number(journalInformation?.Year) :
+                    Number(journalInformation?.Publication_Date) }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -183,8 +160,6 @@ const formattedStudies = computed(() => {
   try {
     // Parse JSON string into an object
     const parsedData = JSON.parse(journalInformation.value?.study_types);
-
-    // Convert object to a readable string (without `{}`) -> "observational studies: 37, study: 18052, studies: 2002"
     return Object.entries(parsedData)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
@@ -199,8 +174,8 @@ const totalStudies = computed(() => {
     const parsedData = journalInformation.value?.inclusions_exclusions
       ? JSON.parse(journalInformation.value?.inclusions_exclusions)
       : null;
-    
-    return parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation?.total_study_count ?? "N/A"; 
+
+    return parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation?.total_study_count ?? "N/A";
   } catch (error) {
     console.error("Error parsing inclusions_exclusions JSON:", error);
     return journalInformation.value?.total_study_count ?? "N/A";

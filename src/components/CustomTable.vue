@@ -112,30 +112,6 @@
       <!-- List View -->
       <v-row>
         <v-col v-for="(item, i) in items" :key="i" cols="12" md="12">
-          <!-- 'elevated', 'flat', 'tonal', 'outlined' -->
-          <!-- <v-card color="primary" variant="outlined" class="mx-auto">
-                        <v-card-item>
-                            <div>
-                                <div class="text-overline mb-1">
-                                    {{ item.Journal }}
-                                </div>
-                                <div class="text-h6 mb-1">
-                                    {{ item.Title }}
-                                </div>
-                                <div class="text-caption mb-2">
-                                    {{ item.Authors }}
-                                </div>
-                                <div class="text-h6 mb-1">
-                                    {{ truncateAbstractText(item.Abstract) }}
-                                </div>
-
-                            </div>
-                        </v-card-item>
-
-                        <v-card-actions>
-                            <v-btn text @click="editItem(item)">View</v-btn>
-                        </v-card-actions>
-                    </v-card> -->
           <v-card color="primary" variant="outlined" class="mx-auto mb-4">
             <v-card-item>
               <div>
