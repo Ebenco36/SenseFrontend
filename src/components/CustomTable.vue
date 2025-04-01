@@ -3,15 +3,16 @@
   <div>
     <!-- Toggle for Views -->
     <v-row align="center">
-      <v-col :xs="12" :sm="12" :md="4" :lg="4" :xl="4">
+      <v-col :xs="12" :sm="12" :md="5" :lg="5" :xl="5">
         <v-card-title>
           <v-btn-toggle v-model="currentView" mandatory>
             <v-btn value="table" color="primary">Table View</v-btn>
             <v-btn value="list" color="primary">List View</v-btn>
+            <v-btn value="table-multiple" color="primary" style="width:fit-content;">Multiple Review</v-btn>
           </v-btn-toggle>
         </v-card-title>
       </v-col>
-      <v-col :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
+      <v-col :xs="12" :sm="12" :md="5" :lg="5" :xl="5">
         <v-text-field
           v-model="searchText"
           @input="searchItemControl"
@@ -74,14 +75,13 @@
             <td :colspan="columns.length">More info about 10</td>
           </tr>
         </template>
-
         <template v-slot:body="{ items }">
           <tr v-for="item in items" :key="item.primary_id">
             <td v-for="header in headers" :key="header.value">
               <slot :name="header.value" :item="item" :header="header">
                 <!-- Format authors for the table -->
                 <template v-if="header.value === 'Authors'">
-                  {{ formatAuthors(safeParseAuthors(item.Authors)) }}
+                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ", " + item.Year }}
                 </template>
                 <template v-else-if="header.value === 'Title'">
                   <a
@@ -94,9 +94,153 @@
                     {{ item.Title }}
                   </a>
                 </template>
+                <template v-else-if="header.value === 'link'">
+                  <a
+                    :href="item.DOI"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-decoration-none"
+                  >
+                    External Link
+                  </a>
+                </template>
+                <template v-else-if="header.value === 'overall_conf'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'no_o_stud'">
+                  {{item.total_study_count || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_ll_search'">
+                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_ll_search'">
+                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_qa'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'Disease'">
+                  {{item.research_notes || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'Notes'">
+                  {{item.notes || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'amster_flaws'">
+                  Nill
+                </template>
                 <template v-else>
                   {{ item[header.value] }}
+                  
                 </template>
+
+                
+              </slot>
+            </td>
+          </tr>
+        </template>
+
+        <template v-slot:no-data>
+          <v-alert :value="true" type="info" class="ma-3"> No data available. </v-alert>
+        </template>
+      </v-data-table>
+    </div>
+
+    <div v-else-if="currentView === 'table-multiple'">
+      <!-- Table View -->
+      <v-data-table
+        v-model:expanded="expanded"
+        show-expand
+        :items="items"
+        :headers="headersCopy"
+        :items-per-page="pagination?.page_size"
+        item-value="primary_id"
+        dense
+        :footer-props="{
+          itemsPerPageOptions: [5, 10, 25, 50],
+          page: pagination?.current_page,
+          itemsPerPage: pagination?.page_size,
+          itemsLength: pagination?.total_records
+        }"
+        @update:page="updatePage"
+        @update:items-per-page="updatePageSize"
+      >
+        <template v-slot:expanded-row="{ columns, item }">
+          <tr>
+            <td :colspan="columns.length">More info about {{ item.primary_id }}</td>
+          </tr>
+        </template>
+
+        <template v-slot:body="{ items }">
+          <tr v-for="item in items" :key="item.primary_id">
+            <td v-for="header in headersCopy" :key="header.value">
+              <slot :name="header.value" :item="item" :header="header">
+                <!-- Format authors for the table -->
+                <template v-if="header.value === 'Authors'">
+                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ", " + item.Year }}
+                </template>
+                <template v-else-if="header.value === 'Title'">
+                  <a
+                    :href="`/details/${item.primary_id}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-decoration-none"
+                    @click.prevent="navigateToDetails(item.primary_id)"
+                  >
+                    {{ item.Title }}
+                  </a>
+                </template>
+                <!-- <template v-else-if="header.value === 'link'">
+                  <a
+                    :href="item.DOI"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-decoration-none"
+                  >
+                    External Link
+                  </a>
+                </template> -->
+                <template v-else-if="header.value === 'overall_conf'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'no_o_stud'">
+                  {{item.total_study_count || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_ll_search'">
+                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_ll_search'">
+                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'date_o_qa'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'Disease'">
+                  {{item.research_notes || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'Notes'">
+                  {{item.notes || "Nill"}}
+                </template>
+                <template v-else-if="header.value === 'amster_flaws'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'study_type'">
+                  {{item.study_types}}
+                </template>
+                <template v-else-if="header.value === 'n_population'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'sex'">
+                  Nill
+                </template>
+                <template v-else-if="header.value === 'outcome'">
+                  Nill
+                </template>
+                <template v-else>
+                  {{ item[header.value] }}
+                  
+                </template>
+
+                
               </slot>
             </td>
           </tr>
@@ -140,7 +284,7 @@
 
                 <!-- Authors -->
                 <div class="text-caption mb-3" style="font-size: 0.9rem; color: black; font-style: italic">
-                  {{ item.Authors }}
+                  {{ item.Authors }} 
                 </div>
 
                 <!-- Abstract -->
@@ -210,7 +354,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 // Props
-defineProps({
+const props = defineProps({
   items: {
     type: Array as PropType<unknown[]>,
     default: () => []
@@ -238,6 +382,32 @@ defineProps({
 function truncateAbstractText(text: string, length = 400) {
   return text.length > length ? text.slice(0, length) + '...' : text;
 }
+
+
+const headersCopy = ref([...props.headers]); // Creates a shallow copy
+
+const addToHeadersCopy = (title: string, value: string) => {
+  headersCopy.value.push({
+    title:title,
+    value:value,
+    align: 'start',
+    sortable: true
+  });
+};
+
+const removeFromHeadersCopyBulk = (titles: string[]) => {
+  headersCopy.value = headersCopy.value.filter(header => !titles.includes(header.title));
+};
+
+removeFromHeadersCopyBulk(["Link", "No. of Studies", "Date of Last Lit Search", "Date of Quality Appraisal", "Disease", "Notes", "Country", "Amster 2 Flaws"]);
+
+// Example: Modify the copied headers instead of the original
+addToHeadersCopy('Study Type', 'study_type');
+addToHeadersCopy('N-Population', 'n_population');
+addToHeadersCopy('Location', 'location');
+addToHeadersCopy('Topic', 'topic');
+// addToHeadersCopy('Sex', 'sex');
+// addToHeadersCopy('Outcome', 'outcome');
 
 // State
 const currentView = ref('table');
@@ -319,8 +489,8 @@ const safeParseAuthors = (authorsString: string): string[] => {
 
 // Format Authors
 const formatAuthors = (authors: string[]): string => {
-  if (authors.length > 3) {
-    return `${authors[0]}, ${authors[1]}, ${authors[2]} et al.`; // Show first 3 authors with "et al."
+  if (authors.length > 1) {
+    return `${authors[0]} et al.`; // Show first 3 authors with "et al."
   }
   console.log(authors.length > 3);
   return authors.join(', '); // Comma-separated list for 3 or fewer authors

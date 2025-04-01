@@ -3,12 +3,12 @@ import {
   // WindmillIcon,
   // TypographyIcon,
   // ShadowIcon,
-  // PaletteIcon,
+  PaletteIcon,
   // KeyIcon,
   // BugIcon,
   DashboardIcon
   // BrandChromeIcon,
-  // HelpIcon
+  // HelpIcon,
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -38,6 +38,11 @@ const sidebarItem: menu[] = [
     title: 'Views',
     icon: DashboardIcon,
     to: '/views'
+  },
+  {
+    title: 'Summary',
+    icon: PaletteIcon,
+    to: '/summary'
   },
   {
     title: 'Contact',

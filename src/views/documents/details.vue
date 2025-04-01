@@ -20,9 +20,9 @@
                 {{ journalInformation?.lit_search_dates__HASH__dates__HASH__dates }}
               </v-col>
               <v-col cols="6" md="6">
-                <span class="font-weight-bold title">Main Vaccine:</span>
+                <span class="font-weight-bold title">No. of Database:</span>
                 <br />
-                Standard OIV
+                {{journalInformation?.num_databases}}
               </v-col>
             </v-row>
 
@@ -54,6 +54,21 @@
                     <v-list-item-title>Population health status: Pregnant Women
                       <!-- {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }} -->
                     </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="12" md="12">
+                <span class="font-weight-bold title">Inclusion & Exclusion:</span>
+                <v-list-item>
+                  <v-list-item-content>
+                    <!-- {{ journalInformation?.inclusions_exclusions }} -->
+                    {{ JSON.parse(journalInformation?.inclusions_exclusions || "null") || {} }}
+                    <!-- <v-list-item-title v-for="value, key in JSON.parse(journalInformation?.inclusions_exclusions)" :key="key">
+                      {{ key +" : "+ value }}
+                    </v-list-item-title> -->
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
@@ -107,7 +122,7 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Open access:</v-list-item-title>
-                  <v-list-item-subtitle>{{ journalInformation?.Open_access }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ journalInformation?.open_acc__HASH__opn_access__HASH__op_ac }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -159,7 +174,7 @@ const id = route.params.id as string | undefined; // Ensure `id` is typed correc
 const formattedStudies = computed(() => {
   try {
     // Parse JSON string into an object
-    const parsedData = JSON.parse(journalInformation.value?.study_types);
+    const parsedData = JSON.parse(journalInformation.value?.study_types || "null") || {};
     return Object.entries(parsedData)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
@@ -174,8 +189,15 @@ const totalStudies = computed(() => {
     const parsedData = journalInformation.value?.inclusions_exclusions
       ? JSON.parse(journalInformation.value?.inclusions_exclusions)
       : null;
-
-    return parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation?.total_study_count ?? "N/A";
+    const parsedData2 = journalInformation.value?.study_types
+      ? JSON.parse(journalInformation.value?.study_types)
+      : null;
+    let res = parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation?.total_study_count ?? "N/A";
+    if (res == "N/A") {
+      return parsedData2?.studies
+    } else {
+      return res
+    }
   } catch (error) {
     console.error("Error parsing inclusions_exclusions JSON:", error);
     return journalInformation.value?.total_study_count ?? "N/A";

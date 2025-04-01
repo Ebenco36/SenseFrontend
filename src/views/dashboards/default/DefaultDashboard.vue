@@ -84,7 +84,7 @@ onMounted(fetchData);
     </v-col>
   </v-row>
 
-  <v-row>
+  <!-- <v-row>
     <v-col cols="6" lg="6">
       <GraphView v-if="data_structure_charts?.source" id="source_chart" :summary="data_structure_charts?.source"
         label="" :show_loading="false" />
@@ -95,5 +95,5 @@ onMounted(fetchData);
         label="" :show_loading="false" />
     </v-col>
 
-  </v-row>
+  </v-row> -->
 </template>

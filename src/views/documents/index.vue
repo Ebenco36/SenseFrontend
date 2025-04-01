@@ -23,10 +23,15 @@ const items = ref<StudyData[]>([]);
 const headers = ref([
   { title: 'Title', value: 'Title', align: 'start', sortable: true },
   { title: 'Authors', value: 'Authors', align: 'start', sortable: true },
-  { title: 'Journal', value: 'Journal', align: 'start', sortable: true },
-  { title: 'Source', value: 'Source', align: 'start', sortable: true },
-  { title: 'Year', value: 'Year', align: 'start', sortable: true }
-  // { title: 'Actions', value: 'actions', align: 'end', sortable: false },
+  { title: 'Link', value: 'link', align: 'start', sortable: true },
+  { title: 'Overall Conf.', value: 'overall_conf', align: 'start', sortable: true },
+  { title: 'No. of Studies', value: 'no_o_stud', align: 'start', sortable: true },
+  { title: 'Date of Last Lit Search', value: 'date_o_ll_search', align: 'start', sortable: true },
+  { title: 'Date of Quality Appraisal', value: 'date_o_qa', align: 'start', sortable: true },
+  { title: 'Country', value: 'Country', align: 'start', sortable: true },
+  { title: 'Disease', value: 'Disease', align: 'start', sortable: true },
+  { title: 'Notes', value: 'Notes', align: 'start', sortable: true },
+  { title: 'Amster 2 Flaws', value: 'amster_flaws', align: 'start', sortable: true },
 ]);
 
 const snackbar = ref({

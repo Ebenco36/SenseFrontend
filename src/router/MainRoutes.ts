@@ -17,6 +17,11 @@ const MainRoutes = {
       component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
     },
     {
+      name: 'summary',
+      path: '/summary',
+      component: () => import('@/views/documents/summary.vue')
+    },
+    {
       name: 'views',
       path: '/views',
       component: () => import('@/views/documents/index.vue')
