@@ -20,9 +20,11 @@ const footerLink = shallowRef([
   <v-footer class="px-0 footer mt-2">
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
-        <p class="text-body-1 mb-0 text-sm-left text-center">
-          <a href="https://" class="text-darkText text-decoration-none" target="_blank">SenseProject</a>
-        </p>
+        <!-- <p class="text-body-1 mb-0 text-sm-left text-center">
+          <a href="https://" class="text-darkText text-decoration-none" target="_blank">
+            <img src='/senseLogoGG.png' alt="SENSE Logo" width="50"/> Sense Project
+          </a>
+        </p> -->
       </v-col>
       <v-col class="text-sm-right text-center" cols="12" sm="6">
         <a

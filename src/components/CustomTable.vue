@@ -90,8 +90,9 @@
                     rel="noopener noreferrer"
                     class="text-decoration-none"
                     @click.prevent="navigateToDetails(item.primary_id)"
+                    :title="item.Title"
                   >
-                    {{ item.Title }}
+                    {{ truncateAbstractText(item.Title, 50) }}
                   </a>
                 </template>
                 <template v-else-if="header.value === 'link'">
@@ -101,7 +102,7 @@
                     rel="noopener noreferrer"
                     class="text-decoration-none"
                   >
-                    External Link
+                    Link
                   </a>
                 </template>
                 <template v-else-if="header.value === 'overall_conf'">
@@ -117,7 +118,7 @@
                   {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
                 </template>
                 <template v-else-if="header.value === 'date_o_qa'">
-                  Nill
+                  {{item.updated_at || getFormattedDate()}}
                 </template>
                 <template v-else-if="header.value === 'Disease'">
                   {{item.research_notes || "Nill"}}
@@ -185,8 +186,9 @@
                     rel="noopener noreferrer"
                     class="text-decoration-none"
                     @click.prevent="navigateToDetails(item.primary_id)"
+                    :title="item.Title"
                   >
-                    {{ item.Title }}
+                    {{ truncateAbstractText(item.Title, 50) }}
                   </a>
                 </template>
                 <!-- <template v-else-if="header.value === 'link'">
@@ -212,7 +214,7 @@
                   {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
                 </template>
                 <template v-else-if="header.value === 'date_o_qa'">
-                  Nill
+                  {{item.updated_at || getFormattedDate()}}
                 </template>
                 <template v-else-if="header.value === 'Disease'">
                   {{item.research_notes || "Nill"}}
@@ -224,16 +226,19 @@
                   Nill
                 </template>
                 <template v-else-if="header.value === 'study_type'">
-                  {{item.study_types}}
+                  
+                  <div v-for="(count, label) in getParsedData(item.study_types)" :key="label">
+                    {{ formatLabel(label) }}: <strong>{{ count }}</strong>
+                  </div>
                 </template>
                 <template v-else-if="header.value === 'n_population'">
-                  Nill
+                  {{truncateAbstractText(item.target_population_in_title, 50) || "Nill"}}
                 </template>
-                <template v-else-if="header.value === 'sex'">
-                  Nill
+                <template v-else-if="header.value === 'location'">
+                  {{item.location_in_title || "Nill"}}
                 </template>
-                <template v-else-if="header.value === 'outcome'">
-                  Nill
+                <template v-else-if="header.value === 'topic'">
+                  {{truncateAbstractText(item.topic_in_title, 50) || "Nill"}}
                 </template>
                 <template v-else>
                   {{ item[header.value] }}
@@ -353,6 +358,7 @@ import { type PropType } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
 // Props
 const props = defineProps({
   items: {
@@ -383,6 +389,28 @@ function truncateAbstractText(text: string, length = 400) {
   return text.length > length ? text.slice(0, length) + '...' : text;
 }
 
+function getParsedData(str: string) {
+  console.log("welcome")
+  try {
+    console.log(JSON.parse(str))
+    return JSON.parse(str)
+  } catch (e) {
+    console.error('Invalid JSON string:', e)
+    return {}
+  }
+}
+
+function formatLabel(label) {
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+function getFormattedDate() {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const year = today.getFullYear();
+  return `${day}.${month}.${year}`;
+}
 
 const headersCopy = ref([...props.headers]); // Creates a shallow copy
 

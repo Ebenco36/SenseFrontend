@@ -172,7 +172,7 @@ const categoryOrder = [
   'topic'
   // 'Reviews', 'Gender'
 ];
-const othersOrder = ['Amster 2 Overall Rating', 'countries', 'languages', 'regions', 'years'];
+const othersOrder = ['Amster 2 Overall Rating', 'countries', 'languages', 'region', 'years'];
 const filters = ref<FiltersData>({
   tag_filters: {},
   others: {}
@@ -194,10 +194,10 @@ const orderBy = reactive({ column: 'primary_id', direction: 'ASC' });
 const customOthers = reactive<Record<string, Set<string>>>({});
 // Mapping for `others` fields to specific column names and types
 const columnMapping: Record<string, { column: string; type: string }> = {
-  years: { column: 'Year', type: 'where' },
-  countries: { column: 'Country', type: 'likewhere' },
-  languages: { column: 'Language', type: 'likewhere' },
-  regions: { column: 'Region', type: 'likewhere' }
+  Year: { column: 'Year', type: 'where' },
+  Country: { column: 'Country', type: 'likewhere' },
+  Language: { column: 'Language', type: 'likewhere' },
+  region: { column: 'region', type: 'likewhere' }
 };
 
 // Helper method for renaming categories or options
@@ -405,8 +405,8 @@ const removeOption = (categoryKey: string, groupKey: string, optionKey: string) 
   }
 };
 
-const addField = (column: string, value: string) => {
-  additionalFields.push({ column, value, type: 'likewhere' });
+const addField = (column: string, value: string, type: string="likewhere") => {
+  additionalFields.push({ column, value, type: type });
 };
 
 const removeField = (index: number) => {
@@ -424,6 +424,8 @@ const submitFilters = () => {
     (acc, otherKey) => {
       const selectedForField = filters.value.others[otherKey].filter((item) => selectedFilters.value.includes(item));
       if (selectedForField.length > 0) {
+        console.log(otherKey, columnMapping[otherKey])
+
         acc.push(
           ...selectedForField.map((value) => ({
             column: columnMapping[otherKey]?.column || otherKey, // Use mapped column or fallback to original key

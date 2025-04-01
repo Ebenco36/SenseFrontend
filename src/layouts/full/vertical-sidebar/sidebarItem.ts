@@ -1,14 +1,9 @@
 import {
-  // CircleIcon,
-  // WindmillIcon,
-  // TypographyIcon,
-  // ShadowIcon,
-  PaletteIcon,
-  // KeyIcon,
-  // BugIcon,
-  DashboardIcon
-  // BrandChromeIcon,
-  // HelpIcon,
+  DashboardIcon,
+  TableIcon,
+  SumIcon,
+  UserShareIcon,
+  UserPinIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -29,29 +24,34 @@ export interface menu {
 
 const sidebarItem: menu[] = [
   { header: 'Dashboard' },
+  { divider: true },
   {
     title: 'Dashboard',
     icon: DashboardIcon,
     to: '/dashboard/default'
   },
+  { divider: true },
   {
     title: 'Views',
-    icon: DashboardIcon,
+    icon: TableIcon,
     to: '/views'
   },
+  { divider: true },
   {
     title: 'Summary',
-    icon: PaletteIcon,
+    icon: SumIcon,
     to: '/summary'
   },
+  { divider: true },
   {
     title: 'Contact',
-    icon: DashboardIcon,
+    icon: UserShareIcon,
     to: '/contact'
   },
+  { divider: true },
   {
     title: 'About Us',
-    icon: DashboardIcon,
+    icon: UserPinIcon,
     to: '/about-us'
   }
   // { divider: true },
@@ -72,52 +72,6 @@ const sidebarItem: menu[] = [
   //       to: '/auth/register'
   //     }
   //   ]
-  // },
-  // {
-  //   title: 'Error 404',
-  //   icon: BugIcon,
-  //   to: '/pages/error'
-  // },
-  // { divider: true },
-  // { header: 'Utilities' },
-  // {
-  //   title: 'Typography',
-  //   icon: TypographyIcon,
-  //   to: '/utils/typography'
-  // },
-  // {
-  //   title: 'Shadows',
-  //   icon: ShadowIcon,
-  //   to: '/utils/shadows'
-  // },
-  // {
-  //   title: 'Colors',
-  //   icon: PaletteIcon,
-  //   to: '/utils/colors'
-  // },
-
-  // {
-  //   title: 'Icons',
-  //   icon: WindmillIcon,
-  //   to: '/forms/radio',
-  //   children: [
-  //     {
-  //       title: 'Tabler Icons',
-  //       icon: CircleIcon,
-  //       to: '/icons/tabler'
-  //     },
-  //     {
-  //       title: 'Material Icons',
-  //       icon: CircleIcon,
-  //       to: '/icons/material'
-  //     }
-  //   ]
-  // },
-  // { divider: true },
-  // {
-  //   title: 'Sample Page',
-  //   icon: BrandChromeIcon,
-  //   to: '/starter'
   // },
 ];
 

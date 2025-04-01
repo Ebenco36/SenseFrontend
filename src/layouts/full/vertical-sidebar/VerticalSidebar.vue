@@ -26,10 +26,22 @@ const sidebarMenu = shallowRef(sidebarItems);
   >
     <!---Logo part -->
 
+    <!-- <div class="pa-5">
+      <b style="font-weight: bolder">
+        <img src="/senseLogoGG.png" alt="SENSE Logo" width="80" height="80"/>
+      </b>
+    </div> -->
+
     <div class="pa-5">
-      <!-- <Logo /> -->
-      <b style="font-weight: bolder">Sense Logo</b>
+      <b style="font-weight: bolder">
+        <img
+          :src="customizer.mini_sidebar ? '/senseLogoGG.png' : '/senseLogoSSS.png'"
+          :width="customizer.mini_sidebar ? 40 : 150"
+          alt="SENSE Logo"
+        />
+      </b>
     </div>
+
     <!-- ---------------------------------------------- -->
     <!---Navigation -->
     <!-- ---------------------------------------------- -->

@@ -84,6 +84,14 @@ onMounted(fetchData);
     </v-col>
   </v-row>
 
+  <v-row>
+    <v-col cols="12" lg="12">
+      <GraphView v-if="data_structure_charts?.country_map" id="country_source_chart"
+        :summary="data_structure_charts?.country_map" label="" :show_loading="false" />
+
+    </v-col>
+  </v-row>
+
   <!-- <v-row>
     <v-col cols="6" lg="6">
       <GraphView v-if="data_structure_charts?.source" id="source_chart" :summary="data_structure_charts?.source"
