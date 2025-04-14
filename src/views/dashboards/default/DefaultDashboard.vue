@@ -64,14 +64,14 @@ onMounted(fetchData);
   </v-row>
 
   <!-- -------------------------------------------------------------------- -->
-  <!-- Metrics -->
+  <!-- Journals -->
   <!-- -------------------------------------------------------------------- -->
-  <h4 class="mt-5 mb-5 text-h4 font-weight-bold">Journals</h4>
+  <!-- <h4 class="mt-5 mb-5 text-h4 font-weight-bold">Journals</h4>
   <v-row>
     <v-col cols="12" md="4" v-for="(item, index) in data_structure?.journal" :key="index">
       <JournalSubMetrics :text="item.Journal" :value="formatNumber(item.record_count)" />
     </v-col>
-  </v-row>
+  </v-row> -->
 
   <!-- -------------------------------------------------------------------- -->
   <!-- JournalSubMetrics -->
@@ -84,13 +84,13 @@ onMounted(fetchData);
     </v-col>
   </v-row>
 
-  <v-row>
+  <!-- <v-row>
     <v-col cols="12" lg="12">
       <GraphView v-if="data_structure_charts?.country_map" id="country_source_chart"
         :summary="data_structure_charts?.country_map" label="" :show_loading="false" />
 
     </v-col>
-  </v-row>
+  </v-row> -->
 
   <!-- <v-row>
     <v-col cols="6" lg="6">

@@ -27,6 +27,11 @@ const MainRoutes = {
       component: () => import('@/views/documents/index.vue')
     },
     {
+      name: 'multiple-review',
+      path: '/multiple-review',
+      component: () => import('@/views/documents/multiple_review.vue')
+    },
+    {
       name: 'about_us',
       path: '/about-us',
       component: () => import('@/views/documents/about_us.vue')
@@ -40,7 +45,12 @@ const MainRoutes = {
       name: 'details',
       path: '/details/:id',
       component: () => import('@/views/documents/details.vue')
-    }
+    },
+    {
+      name: 'testing',
+      path: '/testing',
+      component: () => import('@/views/documents/testing.vue')
+    },
     // {
     //   name: 'Starter',
     //   path: '/starter',

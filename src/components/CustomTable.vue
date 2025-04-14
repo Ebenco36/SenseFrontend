@@ -6,9 +6,9 @@
       <v-col :xs="12" :sm="12" :md="5" :lg="5" :xl="5">
         <v-card-title>
           <v-btn-toggle v-model="currentView" mandatory>
-            <v-btn value="table" color="primary">Table View</v-btn>
-            <v-btn value="list" color="primary">List View</v-btn>
-            <v-btn value="table-multiple" color="primary" style="width:fit-content;">Multiple Review</v-btn>
+            <v-btn value="table" color="primary" v-if="tabs.includes('table-view')">Table View</v-btn>
+            <v-btn value="list" color="primary" v-if="tabs.includes('list-view')">List View</v-btn>
+            <v-btn value="table-multiple" color="primary" v-if="tabs.includes('multiple-view')" style="width:fit-content;">Multiple Review</v-btn>
           </v-btn-toggle>
         </v-card-title>
       </v-col>
@@ -50,7 +50,6 @@
     </v-row>
 
     <!-- Conditional Rendering -->
-
     <div v-if="currentView === 'table'">
       <!-- Table View -->
       <v-data-table
@@ -353,9 +352,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { type PropType } from 'vue';
 import { useRouter } from 'vue-router';
+import { isEqual } from 'lodash-es' 
 
 const router = useRouter();
 
@@ -381,9 +381,41 @@ const props = defineProps({
       page_size: number;
     }>,
     required: true
-  }
+  },
+  tabs: {
+    type: Array as PropType<unknown[]>,
+    default: () => []
+  },
 });
 
+// Watch tabs and update currentView if it matches
+let lastTabs: unknown[] = []
+watch(
+  () => props.tabs,
+  (newTabs) => {
+    if (isEqual(newTabs, lastTabs)) return
+    lastTabs = [...(newTabs || [])]
+
+    if (
+      Array.isArray(newTabs) &&
+      newTabs.length === 1 &&
+      newTabs[0] === 'multiple-view' &&
+      currentView.value !== 'multiple-view'
+    ) {
+      currentView.value = 'table-multiple'
+    }
+  },
+  { immediate: false, deep: true }
+)
+onMounted(() => {
+  if (
+    Array.isArray(props.tabs) &&
+    props.tabs.length === 1 &&
+    props.tabs[0] === 'multiple-view'
+  ) {
+    currentView.value = 'table-multiple'
+  }
+})
 // Create a computed property to truncate the text
 function truncateAbstractText(text: string, length = 400) {
   return text.length > length ? text.slice(0, length) + '...' : text;
@@ -430,7 +462,7 @@ const removeFromHeadersCopyBulk = (titles: string[]) => {
 removeFromHeadersCopyBulk(["Link", "No. of Studies", "Date of Last Lit Search", "Date of Quality Appraisal", "Disease", "Notes", "Country", "Amster 2 Flaws"]);
 
 // Example: Modify the copied headers instead of the original
-addToHeadersCopy('Study Type', 'study_type');
+// addToHeadersCopy('Study Type', 'study_type');
 addToHeadersCopy('N-Population', 'n_population');
 addToHeadersCopy('Location', 'location');
 addToHeadersCopy('Topic', 'topic');

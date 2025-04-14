@@ -1,5 +1,5 @@
 <template>
-  <div class="meta-analysis-page">
+  <div class="meta-analysis-pagesss">
     <v-row>
       <!-- Abstract Section -->
       <v-col cols="12" md="9">
@@ -8,8 +8,10 @@
             <h1 class="font-weight-bold" style="color: white">
               {{ journalInformation?.Title }}
             </h1>
-            <span style="font-size: 12pt; float: right">Publication year: {{ Number(journalInformation?.Year) ?
-              Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date) }}</span>
+            <span style="font-size: 12pt; float: right"
+              >Publication year:
+              {{ Number(journalInformation?.Year) ? Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date) }}</span
+            >
             <v-card-title class="font-weight-bold"> </v-card-title>
           </v-col>
           <v-card-text>
@@ -21,8 +23,12 @@
               </v-col>
               <v-col cols="6" md="6">
                 <span class="font-weight-bold title">No. of Database:</span>
+                <!-- <br /> -->
+                {{ journalInformation?.num_databases }}
                 <br />
-                {{journalInformation?.num_databases}}
+                <span class="font-weight-bold title">List of Databases:</span>
+                <!-- <br /> -->
+                {{ journalInformation?.database_list }}
               </v-col>
             </v-row>
 
@@ -34,45 +40,92 @@
               <v-col cols="6" md="6">
                 <span class="font-weight-bold title">Outcome [Infection]: </span>
                 <br />
-                Standard OIV
+                Standard QIV
               </v-col>
             </v-row>
-
+            <v-divider thickness="5px" style="padding: 5px"></v-divider>
             <v-row>
               <v-col cols="12" md="12">
                 <span class="font-weight-bold title">Characteristics of included studies in review:</span>
                 <v-list-item>
                   <v-list-item-content>
-                    <v-list-item-title>Study Types: {{ formattedStudies }}</v-list-item-title>
-                    <v-list-item-title>Country Distribution: {{
-                      journalInformation?.study_country__HASH__countries__HASH__countries ?
-                        journalInformation?.study_country__HASH__countries__HASH__countries : "Nill"
-                      }}</v-list-item-title>
-                    <v-list-item-title>Sample size: work in progress...
-                      <!-- {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }} -->
-                    </v-list-item-title>
-                    <v-list-item-title>Population health status: Pregnant Women
-                      <!-- {{ journalInformation?.title_popu__HASH__title_pop__HASH__title ? journalInformation?.title_popu__HASH__title_pop__HASH__title : "Nill" }} -->
-                    </v-list-item-title>
+                    <div>
+                      Study Types: RCT: 0, NRSI: 0
+                      <!-- {{ displayKeyValueString(journalInformation?.study_types) }} -->
+                    </div>
+                  </v-list-item-content>
+
+                  <v-list-item-content>
+                    <div>
+                      Country Distribution:
+                      {{
+                        journalInformation?.study_country__HASH__countries__HASH__countries
+                          ? journalInformation?.study_country__HASH__countries__HASH__countries
+                          : 'Nill'
+                      }}
+                    </div>
+                  </v-list-item-content>
+                  <v-list-item-content>
+                    <div>Population Focus / Health Status: Pregnant Women</div>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
             </v-row>
-
+            <v-divider thickness="2px" style="padding: 5px"></v-divider>
             <v-row>
-              <v-col cols="12" md="12">
-                <span class="font-weight-bold title">Inclusion & Exclusion:</span>
+              <v-col cols="6" md="6">
+                <span class="font-weight-bold title">Diseases:</span>
                 <v-list-item>
                   <v-list-item-content>
-                    <!-- {{ journalInformation?.inclusions_exclusions }} -->
-                    {{ JSON.parse(journalInformation?.inclusions_exclusions || "null") || {} }}
-                    <!-- <v-list-item-title v-for="value, key in JSON.parse(journalInformation?.inclusions_exclusions)" :key="key">
-                      {{ key +" : "+ value }}
-                    </v-list-item-title> -->
+                    <div>
+                      <!-- {{ interventionList }} -->
+                      Influenza
+                    </div>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
+
+              <!-- <v-col cols="6" md="6">
+                <span class="font-weight-bold title">Title Tagging:</span>
+                <v-list-item>
+                  <v-list-item-content>
+                    <div>Topic: {{ journalInformation?.topic_in_title || 'null' }}</div>
+                  </v-list-item-content>
+                  <v-list-item-content>
+                    <div>Target Population: {{ journalInformation?.target_population_in_title || 'null' }}</div>
+                  </v-list-item-content>
+                  <v-list-item-content>
+                    <div>Location: {{ journalInformation?.location_in_title || 'null' }}</div>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-col> -->
             </v-row>
+            <!-- <v-divider thickness="2px" style="padding: 5px"></v-divider>
+            <v-row>
+              <v-col cols="6" md="6">
+                <span class="font-weight-bold title">Others:</span>
+                <v-list-item>
+                  <v-list-item-content>
+                    <div>Comparator: {{ journalInformation?.comparator || 'null' }}</div>
+                  </v-list-item-content>
+                  <v-list-item-content>
+                    <div>Duration of Intervention: {{ journalInformation?.duration_of_intervention || 'null' }}</div>
+                  </v-list-item-content>
+                  <v-list-item-content>
+                    <div>Dosage: {{ journalInformation?.dosage || 'null' }}</div>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-col>
+
+              <v-col cols="6" md="6">
+                <span class="font-weight-bold title">Bias :</span>
+                <v-list-item>
+                  <v-list-item-content v-for="(item, key) in parsedFundingBias" :key="item">
+                    <div v-if="key != 'funding_disclosed'">{{ toPascalCase(String(key)) }} : {{ item || 'null' }}</div>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-col>
+            </v-row> -->
           </v-card-text>
         </v-card>
       </v-col>
@@ -86,27 +139,27 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Rating:</v-list-item-title>
-                  <v-list-item-subtitle>Low</v-list-item-subtitle>
+                  <v-list-item-subtitle>Nill</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Authors:</v-list-item-title>
-                  <v-list-item-subtitle v-for="author in journalInformation?.Authors.split(',')" :key="author">
+                  <v-list-item-subtitle v-for="author in journalInformation?.Authors.split('., ')" :key="author">
                     {{ author }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
-              <v-list-item>
+              <!-- <v-list-item>
                 <v-list-item-content v-if="'intervention' in groupedData">
                   <v-list-item-title>Disease:</v-list-item-title>
                   <v-list-item-subtitle v-for="item in groupedData['intervention']" :key="item">
-                    {{ replaceWithMapper(item, item) }}
+                    {{ replaceWithMapper(item) }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
-              </v-list-item>
+              </v-list-item> -->
 
               <v-list-item>
                 <v-list-item-content>
@@ -129,8 +182,7 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Literature search date:</v-list-item-title>
-                  <v-list-item-subtitle>{{ journalInformation?.lit_search_dates__HASH__dates__HASH__dates
-                    }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ journalInformation?.lit_search_dates__HASH__dates__HASH__dates }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -144,8 +196,9 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Publication year:</v-list-item-title>
-                  <v-list-item-subtitle>{{ Number(journalInformation?.Year) ? Number(journalInformation?.Year) :
-                    Number(journalInformation?.Publication_Date) }}</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{
+                    Number(journalInformation?.Year) ? Number(journalInformation?.Year) : Number(journalInformation?.Publication_Date)
+                  }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -171,38 +224,66 @@ const groupedData = ref({});
 const route = useRoute();
 const id = route.params.id as string | undefined; // Ensure `id` is typed correctly
 
-const formattedStudies = computed(() => {
-  try {
-    // Parse JSON string into an object
-    const parsedData = JSON.parse(journalInformation.value?.study_types || "null") || {};
-    return Object.entries(parsedData)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(", ");
-  } catch (error) {
-    console.error("Error parsing JSON:", error);
-    return "Invalid data"; // Fallback message
-  }
-});
+function toPascalCase(str: string) {
+  if (!str) return '';
+  return str
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 const totalStudies = computed(() => {
   try {
-    const parsedData = journalInformation.value?.inclusions_exclusions
-      ? JSON.parse(journalInformation.value?.inclusions_exclusions)
-      : null;
-    const parsedData2 = journalInformation.value?.study_types
-      ? JSON.parse(journalInformation.value?.study_types)
-      : null;
-    let res = parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation?.total_study_count ?? "N/A";
-    if (res == "N/A") {
-      return parsedData2?.studies
+    // const parsedData = journalInformation.value?.inclusions_exclusions ? JSON.parse(journalInformation.value?.study_types) : null;
+    const parsedData2 = journalInformation.value?.study_types ? JSON.parse(journalInformation.value?.study_types) : null;
+    // let res = parsedData?.total_studies ?? parsedData?.yielded ?? journalInformation.value?.total_study_count ?? 'N/A';
+    let res = journalInformation.value?.total_study_count;
+    if (res == 'N/A') {
+      return parsedData2?.studies;
     } else {
-      return res
+      return res;
     }
   } catch (error) {
-    console.error("Error parsing inclusions_exclusions JSON:", error);
-    return journalInformation.value?.total_study_count ?? "N/A";
+    console.error('Error parsing inclusions_exclusions JSON:', error);
+    return journalInformation.value?.total_study_count ?? 'N/A';
   }
 });
+
+// Computed value to convert list into comma-separated string
+const interventionList = computed(() => {
+  const val = groupedData.value?.intervention;
+  const raw = Array.isArray(val) ? val.join(', ') : val ?? '';
+  return replaceWithMapper(raw);
+});
+
+function safeParseJSON(input: string) {
+  try {
+    if (!input || typeof input !== 'string') return {};
+
+    // Attempt to fix common errors (this is very basic and limited)
+    const fixed = input
+      .replace(/([{,]\s*)["']?([^"':]+)["']?\s*:/g, '$1"$2":') // fix unquoted keys
+      .replace(/:\s*([^"{}\[\],]+)(?=[,}])/g, (m, val) => {
+        // Wrap unquoted values (if not a number or null/true/false)
+        if (/^\d+(\.\d+)?$/.test(val) || ['true', 'false', 'null'].includes(val)) {
+          return `: ${val}`;
+        }
+        return `: "${val.trim()}"`;
+      });
+
+    return JSON.parse(fixed);
+  } catch (e) {
+    console.error('Failed to parse/repair JSON:', e, '\nInput:', input);
+    return {};
+  }
+}
+
+function displayKeyValueString(input: any) {
+  const obj = safeParseJSON(input);
+  return Object.entries(obj)
+    .map(([k, v]) => `${toPascalCase(k)}: ${v}`)
+    .join(', ');
+}
 
 const loadInformation = async () => {
   if (!id) {
@@ -230,8 +311,8 @@ const loadInformation = async () => {
   }
 };
 
-const replaceWithMapper = (key: keyof typeof mapper, name: string) => {
-  return mapper[key] ?? name.replace(/_/g, ' ');
+const replaceWithMapper = (key: string): string => {
+  return mapper[key as keyof typeof mapper] ?? key.replace(/_/g, ' ');
 };
 
 interface GroupedData {

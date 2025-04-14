@@ -4,27 +4,26 @@
       <v-card-text>
         <v-row>
           <v-col cols="12" sm="9">
-            <span class="text-subtitle-2 text-disabled font-weight-bold">
-              {{ (title || label) ? joinStringArray(title ? title : label) : show_loading ? "Loading ..." : "" }}
+            <span class="title text-disabled font-weight-bold">
+              {{ title || label ? joinStringArray(title ? title : label) : show_loading ? 'Loading ...' : '' }}
             </span>
           </v-col>
         </v-row>
-        <div :class="{ 'card card-chart-bottom o-hidden mb-4': use_card }">
+        <div :class="{ 'card card-chart-bottom o-hidden mb-4': use_card }" style="margin-top: 20px">
           <div :class="{ 'card-body': use_card }">
-          <div v-if="summary?.config" :id="id" style="width: 100%;"></div>
+            <div v-if="summary?.config" :id="id" style="width: 100%"></div>
 
-          <div v-else class="watermark">Charts are shown here.</div>
-        </div>
+            <div v-else class="watermark">Charts are shown here.</div>
+          </div>
         </div>
       </v-card-text>
-
     </v-card>
   </v-card>
 </template>
 <script setup>
-import { ref, toRaw, toRefs, watchEffect } from 'vue'
-import embed from 'vega-embed'
-import { joinStringArray } from "@/utils/helpers"
+import { ref, toRaw, toRefs, watchEffect } from 'vue';
+import embed from 'vega-embed';
+import { joinStringArray } from '@/utils/helpers';
 
 const props = defineProps({
   id: String,
@@ -38,51 +37,56 @@ const props = defineProps({
     type: Boolean,
     default: true
   }
-})
-const title = ref("")
-const { summary, id, label, show_loading } = toRefs(props)
+});
+const title = ref('');
+const { summary, id, label, show_loading } = toRefs(props);
 
 setTimeout(() => {
   watchEffect(async () => {
     if (summary.value && summary.value.config) {
       let clonedObject = { ...summary.value };
-      title.value = clonedObject.title
+      title.value = clonedObject.title;
       if (clonedObject.layer) {
-        title.value = clonedObject.layer[0].title
+        title.value = clonedObject.layer[0].title;
       } else if (clonedObject.vconcat) {
-        title.value = clonedObject.vconcat[0].title
-      } else if (typeof clonedObject.title == "object") {
-        title.value = clonedObject.title?.text
+        title.value = clonedObject.vconcat[0].title;
+      } else if (typeof clonedObject.title == 'object') {
+        title.value = clonedObject.title?.text;
       } else if (clonedObject.marks) {
-        title.value = clonedObject.marks[0].title?.text
+        title.value = clonedObject.marks[0].title?.text;
       } else {
-        title.value = clonedObject.title
+        title.value = clonedObject.title;
       }
 
       if (summary.value) {
         if (summary.value.layer) {
-          summary.value.layer.title = null
+          summary.value.layer.title = null;
           summary.value.layer.forEach((layer) => {
-            layer.title = null
-          })
+            layer.title = null;
+          });
         } else if (summary.value.vconcat) {
           summary.value.vconcat.forEach((vconcat) => {
-            vconcat.title = null
-          })
+            vconcat.title = null;
+          });
         } else if (summary.value?.title) {
-          summary.value.title = null
+          summary.value.title = null;
         } else if (summary.value?.marks) {
           summary.value.marks.forEach((mark) => {
-            mark.title = null
-          })
+            mark.title = null;
+          });
         } else {
-          summary.value.title = null
+          summary.value.title = null;
         }
-        await embed("#" + id.value, structuredClone(toRaw(summary.value)), { actions: true })
+        await embed('#' + id.value, structuredClone(toRaw(summary.value)), {
+          actions: true,
+          // config: {
+          //   autosize: { type: 'fit', contains: 'padding' },
+          // },
+        });
       }
     }
-  })
-}, 100)
+  });
+}, 100);
 </script>
 <style scoped>
 .watermark {

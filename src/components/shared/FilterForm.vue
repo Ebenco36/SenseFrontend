@@ -2,15 +2,23 @@
   <div>
     <!-- Button to open modal -->
     <v-btn color="primary" @click="openModal = true">
-      <SearchIcon size="20" stroke-width="1.5" /> Search
+      <SearchIcon size="20" stroke-width="1.5" /> Filter
     </v-btn>
 
     <!-- Modal for Advanced Search -->
     <v-dialog v-model="openModal" max-width="85%" persistent>
       <v-card>
         <!-- Modal Title -->
-        <v-card-title>
-          <span class="text-h5 font-weight-bold">Advanced Search</span>
+        <!-- <v-card-title>
+          <span class="text-h5 font-weight-bold">Advanced Filtering</span>
+        </v-card-title> -->
+
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span class="text-h5 font-weight-bold">Advanced Filtering</span>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="closeModal">
+            <v-icon><XIcon/></v-icon>
+          </v-btn>
         </v-card-title>
 
         <!-- Modal Content -->
@@ -19,7 +27,7 @@
             <div class="categories-container">
               <!-- Loop through tag_filters -->
               <div v-for="(categories, categoryKey) in filters.tag_filters" :key="categoryKey" class="category">
-                <h3>{{ replaceWithMapper(categoryKey, categoryKey) }}</h3>
+                <h3>{{ replaceWithMapper(categoryKey) }}</h3>
                 <div class="add-text">
                   <input type="text" v-model="newCategoryText[categoryKey]"
                     placeholder="Add custom item and press Enter" @keydown.enter="addTextToCategory(categoryKey)" />
@@ -36,7 +44,7 @@
                         margin-bottom: 20px!important;
                       "
                     >
-                      {{ replaceWithMapper(groupKey, groupKey) }}
+                      {{ replaceWithMapper(groupKey) }}
                     </small>
                     <div class="options-container">
                       <div v-for="(option, optionKey) in group" :key="optionKey" class="option">
@@ -44,7 +52,7 @@
                           <input type="checkbox" :checked="selectedFilters.includes(String(option.display)) ||
                             (option.synonyms ?? []).some((synonym) => selectedFilters.includes(synonym))
                             " @change="toggleOption(option, $event.target.checked)" />
-                          {{ replaceWithMapper(option.display, option.display) }}
+                          {{ replaceWithMapper(option.display) }}
                         </label>
                         <span v-if="option.isUserAdded" class="remove-button"
                           @click="removeOption(categoryKey, groupKey, optionKey)">
@@ -59,10 +67,11 @@
               <!-- Loop through others -->
               <div v-for="(items, otherKey) in filters.others" :key="otherKey" class="category">
                 <h3>{{ otherKey.charAt(0).toUpperCase() + otherKey.slice(1) }}</h3>
-                <div class="add-text">
+                <div class="add-text" v-if="!excludedAddText.includes(otherKey)">
                   <input type="text" v-model="newOtherText[otherKey]" placeholder="Add custom item and press Enter"
                     @keydown.enter="addTextToOther(otherKey)" />
                 </div>
+                <div class="add-text" v-else></div>
                 <div class="options-container">
                   <div v-for="(item, index) in items" :key="index" class="option">
                     <label>
@@ -142,8 +151,9 @@
 
             <!-- Modal Footer Buttons -->
             <div class="d-flex justify-end mt-3">
-              <v-btn @click="closeModal" class="mr-2"> Close </v-btn>
-              <v-btn type="submit">Search</v-btn>
+              <v-btn @click="closeModal" class="mr-2"> Cancel </v-btn>
+              <v-btn @click="resetFilters" class="mr-2"> Reset </v-btn>
+              <v-btn type="submit">Filter</v-btn>
             </div>
           </form>
         </v-card-text>
@@ -156,7 +166,7 @@
 import { ref, reactive, onMounted, defineEmits, onBeforeUnmount } from 'vue';
 import { fetchFilters } from '@/api/filters';
 import type { FiltersData, FilterOption } from '@/types/my-types/filters';
-import { SearchIcon, PlusIcon, MinusIcon } from 'vue-tabler-icons';
+import { SearchIcon, PlusIcon, MinusIcon, XIcon } from 'vue-tabler-icons';
 import { mapper } from '@/services/index.js';
 // Emits
 const emit = defineEmits(['updateFilters']);
@@ -172,7 +182,7 @@ const categoryOrder = [
   'topic'
   // 'Reviews', 'Gender'
 ];
-const othersOrder = ['Amster 2 Overall Rating', 'countries', 'languages', 'region', 'years'];
+const othersOrder = ['AMSTAR 2 Rating', 'countries', 'languages', 'region', 'years'];
 const filters = ref<FiltersData>({
   tag_filters: {},
   others: {}
@@ -201,10 +211,43 @@ const columnMapping: Record<string, { column: string; type: string }> = {
 };
 
 // Helper method for renaming categories or options
-const replaceWithMapper = (key: keyof typeof mapper, name: string) => {
-  console.log(name)
-  return mapper[key] ?? name.replace(/_/g, ' ');
+
+const replaceWithMapper = (key: string): string => {
+  return mapper[key as keyof typeof mapper] ?? key.replace(/_/g, ' ');
 };
+
+const excludedAddText = ['AMSTAR 2 Rating']; // categories that should NOT show the input
+
+
+const resetFilters = () => {
+  // Clear selected filters
+  selectedFilters.value = [];
+
+  // Reset text inputs
+  Object.keys(newCategoryText).forEach(key => {
+    newCategoryText[key] = '';
+  });
+
+  Object.keys(newOtherText).forEach(key => {
+    newOtherText[key] = '';
+  });
+
+  // Clear additional fields (keep one default)
+  additionalFields.splice(0, additionalFields.length, { column: '', value: '', type: 'likewhere' });
+
+  // Reset orderBy to default
+  orderBy.column = 'primary_id';
+  orderBy.direction = 'ASC';
+
+  // Clear any custom items added to "others"
+  Object.keys(customOthers).forEach(key => {
+    customOthers[key].clear();
+  });
+
+  // Optionally, reset user-added filters in tag_filters and others
+  loadFilters(); // reloads from API
+};
+
 
 // Fetch filters
 const loadFilters = async () => {

@@ -3,7 +3,8 @@ import {
   TableIcon,
   SumIcon,
   UserShareIcon,
-  UserPinIcon
+  UserPinIcon,
+  TagOffIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -23,18 +24,24 @@ export interface menu {
 }
 
 const sidebarItem: menu[] = [
-  { header: 'Dashboard' },
-  { divider: true },
+  // { header: 'Dashboard' },
+  // { divider: true },
   {
-    title: 'Dashboard',
+    title: 'Home',
     icon: DashboardIcon,
     to: '/dashboard/default'
   },
   { divider: true },
   {
-    title: 'Views',
+    title: 'Data Exploration',
     icon: TableIcon,
     to: '/views'
+  },
+  { divider: true },
+  {
+    title: 'Multiple Review',
+    icon: TagOffIcon,
+    to: '/multiple-review'
   },
   { divider: true },
   {
@@ -53,6 +60,12 @@ const sidebarItem: menu[] = [
     title: 'About Us',
     icon: UserPinIcon,
     to: '/about-us'
+  },
+  { divider: true },
+  {
+    title: 'Test',
+    icon: UserPinIcon,
+    to: '/testing'
   }
   // { divider: true },
   // { header: 'Pages' },

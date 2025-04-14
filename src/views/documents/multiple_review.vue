@@ -230,7 +230,7 @@ onMounted(fetchData);
           @search:title="handleTitleSearch"
           @update:items-per-page="handlePageSizeChange"
           @download:file="download"
-          :tabs="['table-view', 'list-view']"
+          :tabs="['multiple-view']"
         >
         </CustomTable>
       </UiParentCard>
