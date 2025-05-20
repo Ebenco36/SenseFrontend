@@ -51,6 +51,11 @@ const MainRoutes = {
       path: '/testing',
       component: () => import('@/views/documents/testing.vue')
     },
+    {
+      name: 'sus-review',
+      path: '/sus-review',
+      component: () => import('@/views/documents/SUS.vue')
+    },
     // {
     //   name: 'Starter',
     //   path: '/starter',

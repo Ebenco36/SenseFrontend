@@ -87,7 +87,6 @@ const fetchData = async () => {
     const response = await postUserSelectionProcess(payload);
 
     // Assign `data` array to `items`
-    console.log(response);
     items.value = response.data.data;
 
     // Update pagination
@@ -180,15 +179,27 @@ const addField = (column: string, value: string) => {
 };
 
 const handleTitleSearch = (searchText: Event) => {
-  const text = (searchText.target as HTMLInputElement).value;
-  if (text.length <= 2) {
-    showToast('Search text must be more than 2 characters.', 'error');
-  } else {
-    showToast('Search successful!', 'success');
-    addField('Title', text);
+  const text = (searchText.target as HTMLInputElement).value.trim();
+
+  // If input is empty, clear filters and load all records
+  if (text == "" || text.length == 0) {
+    // Remove Title filter
+    showToast('Using default search since the search string is empty', 'info');
     filter.value.additional_fields = additionalFields;
-    fetchData();
+    pagination.value.current_page = 1;
+    pagination.value.page = 1;
+  } else if (text.length <= 2) {
+    showToast('Search text must be more than 2 characters.', 'error');
+    return;
   }
+
+  // Valid search
+  showToast('Search successful!', 'success');
+  addField('Title', text);
+  filter.value.additional_fields = additionalFields;
+  pagination.value.current_page = 1;
+  pagination.value.page = 1;
+  fetchData();
 };
 
 const handlePageSizeChange = (pageSize: number) => {
@@ -197,10 +208,14 @@ const handlePageSizeChange = (pageSize: number) => {
   if (filter.value && Object.keys(filter.value).length > 0) {
     pagination.value.page_size = pageSize;
   }
+  pagination.value.current_page = 1
+  pagination.value.page = 1
   fetchData();
 };
 
 const handleUpdateFilters = (filters: Record<string, string[]>) => {
+  pagination.value.current_page = 1
+  pagination.value.page = 1
   appliedFilters.value = filters;
   fetchData();
 };

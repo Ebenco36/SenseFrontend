@@ -2,7 +2,7 @@
   <div class="meta-analysis-pagesss">
     <v-row>
       <!-- Abstract Section -->
-      <v-col cols="12" md="9">
+      <v-col cols="12" md="9" class="d-flex">
         <v-card outlined>
           <v-col cols="12" md="12" style="background-color: #1446a1; color: white">
             <h1 class="font-weight-bold" style="color: white">
@@ -78,68 +78,46 @@
                 <v-list-item>
                   <v-list-item-content>
                     <div>
-                      <!-- {{ interventionList }} -->
-                      Influenza
+                      {{ journalInformation?.research_notes }}
+                      <!-- Influenza -->
                     </div>
                   </v-list-item-content>
                 </v-list-item>
               </v-col>
 
-              <!-- <v-col cols="6" md="6">
-                <span class="font-weight-bold title">Title Tagging:</span>
+              <v-col cols="6" md="6">
+                <span class="font-weight-bold title">Notes:</span>
                 <v-list-item>
                   <v-list-item-content>
-                    <div>Topic: {{ journalInformation?.topic_in_title || 'null' }}</div>
-                  </v-list-item-content>
-                  <v-list-item-content>
-                    <div>Target Population: {{ journalInformation?.target_population_in_title || 'null' }}</div>
-                  </v-list-item-content>
-                  <v-list-item-content>
-                    <div>Location: {{ journalInformation?.location_in_title || 'null' }}</div>
+                    <div>
+                      {{ journalInformation?.notes }}
+                      <!-- Influenza -->
+                    </div>
                   </v-list-item-content>
                 </v-list-item>
-              </v-col> -->
+              </v-col>
             </v-row>
-            <!-- <v-divider thickness="2px" style="padding: 5px"></v-divider>
-            <v-row>
-              <v-col cols="6" md="6">
-                <span class="font-weight-bold title">Others:</span>
-                <v-list-item>
-                  <v-list-item-content>
-                    <div>Comparator: {{ journalInformation?.comparator || 'null' }}</div>
-                  </v-list-item-content>
-                  <v-list-item-content>
-                    <div>Duration of Intervention: {{ journalInformation?.duration_of_intervention || 'null' }}</div>
-                  </v-list-item-content>
-                  <v-list-item-content>
-                    <div>Dosage: {{ journalInformation?.dosage || 'null' }}</div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-col>
-
-              <v-col cols="6" md="6">
-                <span class="font-weight-bold title">Bias :</span>
-                <v-list-item>
-                  <v-list-item-content v-for="(item, key) in parsedFundingBias" :key="item">
-                    <div v-if="key != 'funding_disclosed'">{{ toPascalCase(String(key)) }} : {{ item || 'null' }}</div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-col>
-            </v-row> -->
           </v-card-text>
         </v-card>
       </v-col>
 
       <!-- Information Card -->
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="3" class="d-flex">
         <v-card outlined>
           <v-card-title class="font-weight-bold">Information</v-card-title>
           <v-card-text>
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title>Rating:</v-list-item-title>
-                  <v-list-item-subtitle>Nill</v-list-item-subtitle>
+                  <v-list-item-title>Amstar2 Rating:</v-list-item-title>
+                  <v-list-item-subtitle>{{journalInformation?.amstar_label}}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>Amstar2 Flaws:</v-list-item-title>
+                  <v-list-item-subtitle>{{journalInformation?.amstar_flaws}}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
 
@@ -151,15 +129,6 @@
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
-
-              <!-- <v-list-item>
-                <v-list-item-content v-if="'intervention' in groupedData">
-                  <v-list-item-title>Disease:</v-list-item-title>
-                  <v-list-item-subtitle v-for="item in groupedData['intervention']" :key="item">
-                    {{ replaceWithMapper(item) }}
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item> -->
 
               <v-list-item>
                 <v-list-item-content>

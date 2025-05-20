@@ -61,12 +61,12 @@ const sidebarItem: menu[] = [
     icon: UserPinIcon,
     to: '/about-us'
   },
-  { divider: true },
-  {
-    title: 'Test',
-    icon: UserPinIcon,
-    to: '/testing'
-  }
+  // { divider: true },
+  // {
+  //   title: 'Test',
+  //   icon: UserPinIcon,
+  //   to: '/testing'
+  // }
   // { divider: true },
   // { header: 'Pages' },
   // {

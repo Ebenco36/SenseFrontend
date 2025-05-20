@@ -8,7 +8,9 @@
           <v-btn-toggle v-model="currentView" mandatory>
             <v-btn value="table" color="primary" v-if="tabs.includes('table-view')">Table View</v-btn>
             <v-btn value="list" color="primary" v-if="tabs.includes('list-view')">List View</v-btn>
-            <v-btn value="table-multiple" color="primary" v-if="tabs.includes('multiple-view')" style="width:fit-content;">Multiple Review</v-btn>
+            <v-btn value="table-multiple" color="primary" v-if="tabs.includes('multiple-view')" style="width: fit-content"
+              >Multiple Review</v-btn
+            >
           </v-btn-toggle>
         </v-card-title>
       </v-col>
@@ -80,7 +82,7 @@
               <slot :name="header.value" :item="item" :header="header">
                 <!-- Format authors for the table -->
                 <template v-if="header.value === 'Authors'">
-                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ", " + item.Year }}
+                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ', ' + item.Year }}
                 </template>
                 <template v-else-if="header.value === 'Title'">
                   <a
@@ -95,45 +97,31 @@
                   </a>
                 </template>
                 <template v-else-if="header.value === 'link'">
-                  <a
-                    :href="item.DOI"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-decoration-none"
-                  >
-                    Link
-                  </a>
+                  <a :href="item.DOI" target="_blank" rel="noopener noreferrer" class="text-decoration-none"> Link </a>
                 </template>
-                <template v-else-if="header.value === 'overall_conf'">
-                  Nill
-                </template>
+                <template v-else-if="header.value === 'overall_conf'"> {{item.amstar_label}} </template>
                 <template v-else-if="header.value === 'no_o_stud'">
-                  {{item.total_study_count || "Nill"}}
+                  {{ item.total_study_count || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_ll_search'">
-                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                  {{ item.lit_search_dates__HASH__dates__HASH__dates || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_ll_search'">
-                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                  {{ item.lit_search_dates__HASH__dates__HASH__dates || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_qa'">
-                  {{item.updated_at || getFormattedDate()}}
+                  {{ item.updated_at || getFormattedDate() }}
                 </template>
                 <template v-else-if="header.value === 'Disease'">
-                  {{item.research_notes || "Nill"}}
+                  {{ item.research_notes || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'Notes'">
-                  {{item.notes || "Nill"}}
+                  {{ item.notes || 'Nill' }}
                 </template>
-                <template v-else-if="header.value === 'amster_flaws'">
-                  Nill
-                </template>
+                <template v-else-if="header.value === 'amster_flaws'"> {{item.amstar_flaws}} </template>
                 <template v-else>
                   {{ item[header.value] }}
-                  
                 </template>
-
-                
               </slot>
             </td>
           </tr>
@@ -176,7 +164,7 @@
               <slot :name="header.value" :item="item" :header="header">
                 <!-- Format authors for the table -->
                 <template v-if="header.value === 'Authors'">
-                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ", " + item.Year }}
+                  {{ formatAuthors(safeParseAuthors(item.Authors)) + ', ' + item.Year }}
                 </template>
                 <template v-else-if="header.value === 'Title'">
                   <a
@@ -200,51 +188,43 @@
                     External Link
                   </a>
                 </template> -->
-                <template v-else-if="header.value === 'overall_conf'">
-                  Nill
-                </template>
+                <template v-else-if="header.value === 'overall_conf'"> {{item.amstar_label}} </template>
                 <template v-else-if="header.value === 'no_o_stud'">
-                  {{item.total_study_count || "Nill"}}
+                  {{ item.total_study_count || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_ll_search'">
-                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                  {{ item.lit_search_dates__HASH__dates__HASH__dates || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_ll_search'">
-                  {{item.lit_search_dates__HASH__dates__HASH__dates || "Nill"}}
+                  {{ item.lit_search_dates__HASH__dates__HASH__dates || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'date_o_qa'">
-                  {{item.updated_at || getFormattedDate()}}
+                  {{ item.updated_at || getFormattedDate() }}
                 </template>
                 <template v-else-if="header.value === 'Disease'">
-                  {{item.research_notes || "Nill"}}
+                  {{ item.research_notes || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'Notes'">
-                  {{item.notes || "Nill"}}
+                  {{ item.notes || 'Nill' }}
                 </template>
-                <template v-else-if="header.value === 'amster_flaws'">
-                  Nill
-                </template>
+                <template v-else-if="header.value === 'amster_flaws'"> {{item.amstar_flaws}} </template>
                 <template v-else-if="header.value === 'study_type'">
-                  
                   <div v-for="(count, label) in getParsedData(item.study_types)" :key="label">
                     {{ formatLabel(label) }}: <strong>{{ count }}</strong>
                   </div>
                 </template>
                 <template v-else-if="header.value === 'n_population'">
-                  {{truncateAbstractText(item.target_population_in_title, 50) || "Nill"}}
+                  {{ truncateAbstractText(item.target_population_in_title, 50) || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'location'">
-                  {{item.location_in_title || "Nill"}}
+                  {{ item.location_in_title || 'Nill' }}
                 </template>
                 <template v-else-if="header.value === 'topic'">
-                  {{truncateAbstractText(item.topic_in_title, 50) || "Nill"}}
+                  {{ truncateAbstractText(item.topic_in_title, 50) || 'Nill' }}
                 </template>
                 <template v-else>
                   {{ item[header.value] }}
-                  
                 </template>
-
-                
               </slot>
             </td>
           </tr>
@@ -288,7 +268,7 @@
 
                 <!-- Authors -->
                 <div class="text-caption mb-3" style="font-size: 0.9rem; color: black; font-style: italic">
-                  {{ item.Authors }} 
+                  {{ item.Authors }}
                 </div>
 
                 <!-- Abstract -->
@@ -355,7 +335,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { type PropType } from 'vue';
 import { useRouter } from 'vue-router';
-import { isEqual } from 'lodash-es' 
+import { isEqual } from 'lodash-es';
 
 const router = useRouter();
 
@@ -385,55 +365,45 @@ const props = defineProps({
   tabs: {
     type: Array as PropType<unknown[]>,
     default: () => []
-  },
+  }
 });
 
 // Watch tabs and update currentView if it matches
-let lastTabs: unknown[] = []
+let lastTabs: unknown[] = [];
 watch(
   () => props.tabs,
   (newTabs) => {
-    if (isEqual(newTabs, lastTabs)) return
-    lastTabs = [...(newTabs || [])]
+    if (isEqual(newTabs, lastTabs)) return;
+    lastTabs = [...(newTabs || [])];
 
-    if (
-      Array.isArray(newTabs) &&
-      newTabs.length === 1 &&
-      newTabs[0] === 'multiple-view' &&
-      currentView.value !== 'multiple-view'
-    ) {
-      currentView.value = 'table-multiple'
+    if (Array.isArray(newTabs) && newTabs.length === 1 && newTabs[0] === 'multiple-view' && currentView.value !== 'multiple-view') {
+      currentView.value = 'table-multiple';
     }
   },
   { immediate: false, deep: true }
-)
+);
 onMounted(() => {
-  if (
-    Array.isArray(props.tabs) &&
-    props.tabs.length === 1 &&
-    props.tabs[0] === 'multiple-view'
-  ) {
-    currentView.value = 'table-multiple'
+  if (Array.isArray(props.tabs) && props.tabs.length === 1 && props.tabs[0] === 'multiple-view') {
+    currentView.value = 'table-multiple';
   }
-})
+});
 // Create a computed property to truncate the text
 function truncateAbstractText(text: string, length = 400) {
-  return text.length > length ? text.slice(0, length) + '...' : text;
+  return text && text.length > length ? text.slice(0, length) + '...' : text;
 }
 
 function getParsedData(str: string) {
-  console.log("welcome")
   try {
-    console.log(JSON.parse(str))
-    return JSON.parse(str)
+    console.log(JSON.parse(str));
+    return JSON.parse(str);
   } catch (e) {
-    console.error('Invalid JSON string:', e)
-    return {}
+    console.error('Invalid JSON string:', e);
+    return {};
   }
 }
 
 function formatLabel(label) {
-  return label.charAt(0).toUpperCase() + label.slice(1)
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function getFormattedDate() {
@@ -448,24 +418,34 @@ const headersCopy = ref([...props.headers]); // Creates a shallow copy
 
 const addToHeadersCopy = (title: string, value: string) => {
   headersCopy.value.push({
-    title:title,
-    value:value,
+    title: title,
+    value: value,
     align: 'start',
     sortable: true
   });
 };
 
 const removeFromHeadersCopyBulk = (titles: string[]) => {
-  headersCopy.value = headersCopy.value.filter(header => !titles.includes(header.title));
+  headersCopy.value = headersCopy.value.filter((header) => !titles.includes(header.title));
 };
 
-removeFromHeadersCopyBulk(["Link", "No. of Studies", "Date of Last Lit Search", "Date of Quality Appraisal", "Disease", "Notes", "Country", "Amster 2 Flaws"]);
+removeFromHeadersCopyBulk([
+  'Link',
+  'No. of Studies',
+  'Date of Last Lit Search',
+  'Date of Quality Appraisal',
+  'Disease',
+  'Notes',
+  'Country',
+  'Appraisal Date',
+  // 'Amster 2 Flaws'
+]);
 
 // Example: Modify the copied headers instead of the original
 // addToHeadersCopy('Study Type', 'study_type');
-addToHeadersCopy('N-Population', 'n_population');
-addToHeadersCopy('Location', 'location');
-addToHeadersCopy('Topic', 'topic');
+// addToHeadersCopy('N-Population', 'n_population');
+// addToHeadersCopy('Location', 'location');
+// addToHeadersCopy('Topic', 'topic');
 // addToHeadersCopy('Sex', 'sex');
 // addToHeadersCopy('Outcome', 'outcome');
 
