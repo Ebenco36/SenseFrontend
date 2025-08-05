@@ -32,13 +32,20 @@ const sidebarMenu = shallowRef(sidebarItems);
       </b>
     </div> -->
 
-    <div class="pa-5">
+    <!-- <div class="pa-5">
       <b style="font-weight: bolder">
         <img
           :src="customizer.mini_sidebar ? '/senseLogoGG.png' : '/senseLogoSSS.png'"
           :width="customizer.mini_sidebar ? 40 : 150"
           alt="SENSE Logo"
         />
+      </b>
+    </div> -->
+    <div class="pa-5">
+      <b style="font-weight: bolder;">
+        <span class="logo-text">
+          {{ customizer.mini_sidebar ? 'SYSVAC AI' : 'SYSVAC AI' }}
+        </span>
       </b>
     </div>
 
@@ -66,3 +73,13 @@ const sidebarMenu = shallowRef(sidebarItems);
     </perfect-scrollbar>
   </v-navigation-drawer>
 </template>
+<style scoped>
+.logo-text {
+  font-size: 24px;
+  color: #153a9d; /* Example color */
+  line-height: 1;
+}
+* {
+  font-size: 1.5rem!important;
+}
+</style>

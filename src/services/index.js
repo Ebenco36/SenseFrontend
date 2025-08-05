@@ -98,7 +98,8 @@ const mapper = {
   quad: 'Quadrivalent',
   biva: 'Bivalent',
   en: 'English',
-  imu: 'Immunization'
+  imu: 'Immunocompromised',
+  region: "Region"
 };
 
 export { mapper };

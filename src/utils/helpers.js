@@ -27,3 +27,29 @@ export const generateUUID = () => {
       return v.toString(16);
     });
 }
+
+export const safeParseAuthors = (authorsString) => {
+  if (!authorsString || typeof authorsString !== 'string') {
+    return [];
+  }
+  const authors = authorsString.split(/[,;]/);
+  return authors
+    .map(author => author.trim().replace(/['"\[\]]/g, '')) // Remove brackets and quotes
+    .filter(author => author.length > 0); // Remove any empty strings
+
+};
+
+
+
+export const formatAuthors = (authors) => {
+  if (!Array.isArray(authors) || authors.length === 0) {
+    return 'N/A';
+  }
+  if (authors.length === 1) {
+    return authors[0];
+  }
+  if (authors.length === 2) {
+    return authors.join(' & '); // Use "&" for two authors
+  }
+  return `${authors[0]} et al.`;
+};

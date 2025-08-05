@@ -49,11 +49,8 @@ onMounted(fetchData);
 </script>
 
 <template>
-  <v-row>
+  <!-- <v-row>
     <Loader :isLoading="loading"></Loader>
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Metrics -->
-    <!-- -------------------------------------------------------------------- -->
     <v-col v-for="(item, index) in data_structure?.source" :key="index" cols="12" md="3">
       <JournalMetrics v-if="index % 2 == 0" :summary_text="formattedRecordsHtml" baseClass="bubble-shape" shapeClass="bubble-primary-shape"
         backgroundClass="bg-primary" btnColor="darkprimary" :text="item.Source"
@@ -61,7 +58,7 @@ onMounted(fetchData);
       <JournalMetrics v-else :summary_text="formattedRecordsHtml" baseClass="bubble-shape" shapeClass="bubble-secondary-shape" backgroundClass="bg-secondary"
         btnColor="darksecondary" :text="item.Source" :value="formatNumber(item.record_count)" />
     </v-col>
-  </v-row>
+  </v-row> -->
 
   <!-- -------------------------------------------------------------------- -->
   <!-- Journals -->
@@ -76,13 +73,13 @@ onMounted(fetchData);
   <!-- -------------------------------------------------------------------- -->
   <!-- JournalSubMetrics -->
   <!-- -------------------------------------------------------------------- -->
-  <v-row>
+  <!-- <v-row>
     <v-col cols="12" lg="12">
       <GraphView v-if="data_structure_charts?.year_source" id="year_source_chart"
         :summary="data_structure_charts?.year_source" label="" :show_loading="false" />
 
     </v-col>
-  </v-row>
+  </v-row> -->
 
   <!-- <v-row>
     <v-col cols="12" lg="12">
