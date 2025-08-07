@@ -13,17 +13,8 @@ const sidebarMenu = shallowRef(sidebarItems);
 </script>
 
 <template>
-  <v-navigation-drawer
-    left
-    v-model="customizer.Sidebar_drawer"
-    elevation="0"
-    rail-width="75"
-    mobile-breakpoint="lg"
-    app
-    class="leftSidebar"
-    :rail="customizer.mini_sidebar"
-    expand-on-hover
-  >
+  <v-navigation-drawer left v-model="customizer.Sidebar_drawer" elevation="0" rail-width="75" mobile-breakpoint="lg" app
+    class="leftSidebar" :rail="customizer.mini_sidebar" expand-on-hover>
     <!---Logo part -->
 
     <!-- <div class="pa-5">
@@ -41,7 +32,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         />
       </b>
     </div> -->
-    <div class="pa-5">
+    <div class="pa-5 text-center">
       <b style="font-weight: bolder;">
         <span class="logo-text">
           {{ customizer.mini_sidebar ? 'SYSVAC AI' : 'SYSVAC AI' }}
@@ -76,10 +67,12 @@ const sidebarMenu = shallowRef(sidebarItems);
 <style scoped>
 .logo-text {
   font-size: 24px;
-  color: #153a9d; /* Example color */
+  color: #153a9d;
+  /* Example color */
   line-height: 1;
 }
+
 * {
-  font-size: 1.5rem!important;
+  font-size: 1.5rem !important;
 }
 </style>

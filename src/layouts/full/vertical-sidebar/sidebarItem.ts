@@ -42,7 +42,7 @@ const sidebarItem: menu[] = [
   {
     title: 'Summary',
     icon: SumIcon,
-    to: '/summary_page'
+    to: '/summary_page',
   },
   
   { divider: true },
@@ -58,24 +58,24 @@ const sidebarItem: menu[] = [
   //   icon: PlusIcon,
   //   to: '/new_record'
   // },
-  { divider: true },
-  {
-    title: 'Data Exploration',
-    icon: TableFilledIcon,
-    to: '/simple_table'
-  },
+  // { divider: true },
+  // {
+  //   title: 'Data Exploration',
+  //   icon: TableFilledIcon,
+  //   to: '/simple_table'
+  // },
   { divider: true },
   {
     title: 'Contact',
     icon: UserShareIcon,
     to: '/contact'
   },
-  { divider: true },
-  {
-    title: 'Test',
-    icon: UserPinIcon,
-    to: '/testing'
-  }
+  // { divider: true },
+  // {
+  //   title: 'Test',
+  //   icon: UserPinIcon,
+  //   to: '/testing'
+  // }
   // { divider: true },
   // { header: 'Pages' },
   // {

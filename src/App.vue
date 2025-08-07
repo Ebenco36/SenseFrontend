@@ -15,8 +15,13 @@ import { RouterView } from 'vue-router';
   font-family: 'Inter', sans-serif !important;
 }
 
-*:not(.v-text-field):not(.v-text-field *) {
+*:not(.v-text-field):not(.v-text-field *):not(.v-chip__content) {
   font-size: 1.0rem !important;
+}
+
+.v-chip__content {
+    font-size: 7pt;
+    font-weight: 800;
 }
 /* Add custom styles for better readability */
 .readable-body {

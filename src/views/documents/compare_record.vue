@@ -33,57 +33,88 @@
         </div>
 
         <v-card v-else-if="recordsToCompare.length > 0" border flat>
-          <v-table class="comparison-table">
-            <thead>
-              <tr>
-                <th class="feature-column">
-                  <span class="text-subtitle-1 font-weight-bold">Feature</span>
-                </th>
-                <th v-for="record in recordsToCompare" :key="record.id" class="text-center">
-                  <div class="d-flex align-center justify-center">
-                    <a href="#" class="text-subtitle-1 font-weight-bold result-title">{{ record.title }}</a>
+          <div class="comparison-table-wrapper">
+            <v-table class="comparison-table">
+              <thead>
+                <tr>
+                  <th class="feature-column">
+                    <span class="text-subtitle-1 font-weight-bold">Feature</span>
+                  </th>
+                  <th v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <div :class="{ 'text-truncate': !record.isHeaderExpanded }">
+                      <a href="#" class="text-subtitle-1 font-weight-bold result-title">{{ record.title }}</a>
+                      <div class="text-caption text-medium-emphasis">{{ record.authors }}</div>
+                    </div>
                     <v-btn
-                      icon="mdi-close-circle"
-                      variant="text"
                       size="x-small"
-                      class="ms-1"
-                      @click="removeRecord(record.id)"
-                    ></v-btn>
-                  </div>
-                  <div class="text-caption text-medium-emphasis">{{ record.authors }}</div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="attr in filteredAttributes" :key="attr.key">
-                <td class="feature-column"><strong>{{ attr.label }}</strong></td>
-                
-                <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
-                  <v-tooltip :text="attr.reason" location="top" :disabled="!isBestValue(attr.key, record[attr.key])">
-                    <template v-slot:activator="{ props }">
-                      <v-chip v-bind="props" v-if="attr.highlight && isBestValue(attr.key, record[attr.key])" color="success" variant="flat" size="small">
-                        {{ record[attr.key] }}
-                      </v-chip>
-                      
-                      <v-chip v-else-if="attr.type === 'confidence'" :color="getConfidenceColor(record[attr.key])" variant="tonal" size="small" class="font-weight-medium">
-                        {{ record[attr.key] }}
-                      </v-chip>
-                      
-                      <span v-else class="text-body-2">{{ record[attr.key] || 'N/A' }}</span>
-                    </template>
-                  </v-tooltip>
-                </td>
-              </tr>
-              <tr v-if="isAttributeVisible('tags')">
-                <td class="feature-column"><strong>Tags</strong></td>
-                <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
-                   <v-chip-group center>
-                    <v-chip v-for="tag in record.tags" :key="tag.text" :color="tag.color" size="small" variant="tonal">{{ tag.text }}</v-chip>
-                  </v-chip-group>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+                      variant="text"
+                      class="mt-1 text-none"
+                      color="primary"
+                      @click="record.isHeaderExpanded = !record.isHeaderExpanded"
+                    >
+                      {{ record.isHeaderExpanded ? 'Show Less' : 'Show More' }}
+                    </v-btn>
+                    <div>
+                      <v-btn
+                        icon="mdi-close-circle"
+                        variant="text"
+                        size="x-small"
+                        @click="removeRecord(record.id)"
+                      ></v-btn>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="attr in filteredAttributes" :key="attr.key">
+                  <td class="feature-column"><strong>{{ attr.label }}</strong></td>
+                  <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <v-tooltip :text="attr.reason" location="top" :disabled="!isBestValue(attr.key, record[attr.key])">
+                      <template v-slot:activator="{ props }">
+                        <v-chip v-bind="props" v-if="attr.highlight && isBestValue(attr.key, record[attr.key])" color="success" variant="flat" size="small">
+                          {{ record[attr.key] }}
+                        </v-chip>
+                        <v-chip v-else-if="attr.type === 'confidence'" :color="getConfidenceColor(record[attr.key])" variant="tonal" size="small" class="font-weight-medium">
+                          {{ record[attr.key] }}
+                        </v-chip>
+                        <span v-else class="text-body-2">{{ record[attr.key] || 'N/A' }}</span>
+                      </template>
+                    </v-tooltip>
+                  </td>
+                </tr>
+                <tr v-if="isAttributeVisible('studyTypes')">
+                  <td class="feature-column"><strong>Study Types</strong></td>
+                  <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <span class="text-body-2">RCT: {{ record.studyTypes.rct }}, NRSI: {{ record.studyTypes.nrsi }}</span>
+                  </td>
+                </tr>
+                <tr v-if="isAttributeVisible('diseases')">
+                  <td class="feature-column"><strong>Diseases</strong></td>
+                  <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <v-chip-group center>
+                        <v-chip v-for="disease in record.diseases" :key="disease" size="small">{{ replaceWithMapper(disease) }}</v-chip>
+                    </v-chip-group>
+                  </td>
+                </tr>
+                <tr v-if="isAttributeVisible('notes')">
+                  <td class="feature-column"><strong>Notes</strong></td>
+                  <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <v-chip-group center>
+                        <v-chip v-for="note in record.notes" :key="note" size="small">{{ replaceWithMapper(note) }}</v-chip>
+                    </v-chip-group>
+                  </td>
+                </tr>
+                <tr v-if="isAttributeVisible('topic_notes')">
+                  <td class="feature-column"><strong>Topic Notes</strong></td>
+                  <td v-for="record in recordsToCompare" :key="record.id" class="text-center">
+                    <v-chip-group center>
+                        <v-chip v-for="note in record.topic_notes" :key="note" size="small">{{ replaceWithMapper(note) }}</v-chip>
+                    </v-chip-group>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </div>
         </v-card>
 
         <v-sheet v-else height="400" class="d-flex align-center justify-center text-center flex-column" border rounded>
@@ -100,6 +131,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { mapper } from '@/services/index.js';
 
 // --- TYPE DEFINITIONS ---
 interface ComparisonRecord {
@@ -108,13 +140,21 @@ interface ComparisonRecord {
   authors: string;
   year: number | string;
   country: string;
-  topic: string;
-  quality: string;
-  studies: number | string;
+  publication_date: string;
+  date_of_literature_search: string;
+  studyTypes: { rct: number; nrsi: number };
+  targetPopulation: string;
+  notes: string[];
+  topic_notes: string[];
+  diseases: string[];
   confidence: string;
-  amster2Flaws: number | string;
-  tags: { text: string, color: string }[];
+  // amster2Flaws: number | string;
+  isHeaderExpanded: boolean;
 }
+
+const replaceWithMapper = (key: string): string => {
+    return mapper[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
 
 // --- STATE & ROUTING ---
 const route = useRoute();
@@ -130,7 +170,6 @@ onMounted(async () => {
     return;
   }
   
-  // Ensure we have a valid string of IDs to send
   const ids = idsQuery.split(',').map(Number).filter(id => !isNaN(id));
   if (ids.length === 0) {
     loading.value = false;
@@ -138,28 +177,26 @@ onMounted(async () => {
   }
 
   try {
-    // ✅ FIX: Changed to a GET request with IDs in the params
-    const response = await axios.get('http://0.0.0.0:5400/api/v1/api/compare', {
-      params: {
-        ids: ids.join(',') // Axios will format this as ?ids=1,2,3
-      }
-    });
+    const response = await axios.get('http://0.0.0.0:5400/api/v1/api/compare', { params: { ids: ids.join(',') } });
     const apiRecords = response.data?.data;
 
     if (Array.isArray(apiRecords)) {
-      recordsToCompare.value = apiRecords.map((record: any) => ({
+      recordsToCompare.value = apiRecords.map((record: any): ComparisonRecord => ({
         id: record.primary_id,
-        title: record.title,
+        title: record.title || 'N/A',
         authors: formatAuthors(safeParseAuthors(record.authors)),
         year: record.year || 'N/A',
-        country: record.country || 'N/A',
-        studies: record.citation_count ?? 'N/A',
-        // Dummy data for fields not in API
-        topic: 'Influenza',
-        quality: 'High',
-        confidence: 'High',
-        amster2Flaws: 1,
-        tags: [ { text: 'Systematic Review', color: 'blue-lighten-4' }, { text: 'API Data', color: 'green-lighten-4' }]
+        country: (record.country || '').replace(/[\[\]']/g, ''),
+        publication_date: record.date || 'N/A',
+        date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || 'N/A',
+        notes: stringToList(record.notes),
+        diseases: stringToList(record.research_notes),
+        topic_notes: stringToList(record.topic_notes, mapper),
+        targetPopulation: record.target_population_in_title || 'N/A',
+        studyTypes: { rct: 0, nrsi: 0 }, // Placeholder
+        isHeaderExpanded: false,
+        confidence: record.amstar_label || 'N/A',
+        // amster2Flaws: Math.floor(Math.random() * 5),
       }));
     }
   } catch (error) {
@@ -178,21 +215,29 @@ const removeRecord = (idToRemove: number) => {
     router.replace({ query: { ids: updatedIds || undefined } });
 };
 
+// ✅ RESTORED: All attributes are now included for selection
 const comparisonAttributes = ref([
   { label: 'Publication Year', key: 'year', highlight: 'max', reason: 'Most recent publication' },
-  { label: 'Lead Country', key: 'country' },
-  { label: 'Primary Topic', key: 'topic' },
-  { label: 'Citation Count', key: 'studies', highlight: 'max', reason: 'Highest citation count' },
-  { label: 'AMSTAR 2 Rating', key: 'quality', type: 'confidence' },
-  { label: 'AMSTAR 2 Flaws', key: 'amster2Flaws', highlight: 'min', reason: 'Fewest methodological flaws' },
+  { label: 'Country', key: 'country' },
+  { label: 'Publication Date', key: 'publication_date' },
+  { label: 'Date of Last Literature Search', key: 'date_of_literature_search' },
+  // { label: 'AMSTAR 2 Flaws', key: 'amster2Flaws', highlight: 'min', reason: 'Fewest methodological flaws' },
   { label: 'Overall Confidence', key: 'confidence', type: 'confidence' },
-  { label: 'Tags', key: 'tags'},
+  { label: 'Study Types', key: 'studyTypes' },
+  { label: 'Target Population', key: 'targetPopulation' },
+  { label: 'Diseases', key: 'diseases' },
+  { label: 'Notes', key: 'notes' },
+  { label: 'Topics', key: 'topic_notes' },
 ]);
 
 const visibleAttributes = ref(comparisonAttributes.value.map(a => a.key));
 
+const manuallyHandledKeys = ['studyTypes', 'diseases', 'notes', 'topic_notes'];
 const filteredAttributes = computed(() => {
-    return comparisonAttributes.value.filter(attr => visibleAttributes.value.includes(attr.key) && attr.key !== 'tags');
+    return comparisonAttributes.value.filter(attr => 
+        visibleAttributes.value.includes(attr.key) && 
+        !manuallyHandledKeys.includes(attr.key)
+    );
 });
 
 const isAttributeVisible = (key: string) => visibleAttributes.value.includes(key);
@@ -221,39 +266,31 @@ const getConfidenceColor = (confidence: string) => {
 const safeParseAuthors = (authorsString?: string): string[] => {
   if (!authorsString) return [];
   try {
-    const trimmed = authorsString.trim();
-    if (trimmed.includes(',')) return trimmed.split(',').map(a => a.trim());
-    return trimmed ? [trimmed] : [];
-  } catch {
-    return [];
-  }
+    return authorsString.trim().split(/[,;]/).map(a => a.trim().replace(/['"\[\]]/g, '')).filter(Boolean);
+  } catch { return []; }
+};
+const formatAuthors = (authors: string[]): string => {
+  if (!Array.isArray(authors) || authors.length === 0) return 'N/A';
+  if (authors.length > 1) return `${authors[0]} et al.`;
+  return authors[0];
 };
 
-const formatAuthors = (authors: string[]): string => {
-  if (!authors || authors.length === 0) return 'N/A';
-  if (authors.length > 2) return `${authors[0]} et al.`;
-  return authors.join(', ');
+const stringToList = (str?: string, valueMapper?: Record<string, string>): string[] => {
+  if (typeof str !== 'string' || !str) return [];
+  const list = str.split(',').map(item => item.trim()).filter(Boolean);
+  return valueMapper ? list.map(key => mapper[key] || key) : list;
 };
+
 </script>
 
 <style scoped>
-.comparison-table th, .comparison-table td {
-  vertical-align: top;
-  padding: 16px !important;
-  text-align: center;
-}
-.feature-column {
-  width: 15%;
-  min-width: 180px;
-  background-color: #f9f9f9;
-  font-weight: 500;
-  text-align: left !important;
-}
-.result-title {
-  color: #153a9d;
-  text-decoration: none;
-}
-.result-title:hover {
-  text-decoration: underline;
-}
+/* Scoped styles remain the same */
+.comparison-table-wrapper { overflow-x: auto; }
+.comparison-table { table-layout: fixed; width: 100%; }
+.feature-column { width: 20%; min-width: 200px; background-color: #f9f9f9; font-weight: 500; text-align: left !important; vertical-align: top; padding: 16px !important; }
+.comparison-table th, .comparison-table td { vertical-align: top; padding: 16px !important; text-align: center; word-break: break-word; border-left: 1px solid #e0e0e0; }
+.comparison-table th:first-child, .comparison-table td:first-child { border-left: none; }
+.text-truncate { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-height: 3.2em; line-height: 1.6em; }
+.result-title { color: #1565C0; text-decoration: none; white-space: normal; }
+.result-title:hover { text-decoration: underline; }
 </style>

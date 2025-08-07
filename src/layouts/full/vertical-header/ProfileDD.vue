@@ -10,7 +10,7 @@ const authStore = useAuthStore();
   <!-- ---------------------------------------------- -->
   <!-- profile DD -->
   <!-- ---------------------------------------------- -->
-  <div class="pa-4">
+  <!-- <div class="pa-4">
     <h4 class="mb-n1">Good Morning, <span class="font-weight-regular">John Doe</span></h4>
 
     <perfect-scrollbar style="height: calc(100vh - 300px); max-height: fit-content">
@@ -32,5 +32,5 @@ const authStore = useAuthStore();
         </v-list-item>
       </v-list>
     </perfect-scrollbar>
-  </div>
+  </div> -->
 </template>

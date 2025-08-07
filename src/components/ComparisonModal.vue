@@ -136,7 +136,10 @@ interface ApiPayload {
   additional_fields: AdditionalField[];
 }
 
-const props = defineProps<{ modelValue: boolean }>();
+const props = defineProps<{
+  modelValue: boolean;
+  initialSelection?: ServerItem | null; // The record from the details page
+}>();
 const emit = defineEmits(['update:modelValue']);
 const router = useRouter();
 
@@ -219,6 +222,18 @@ watch(() => props.modelValue, (newValue) => {
     if (newValue) {
         serverItems.value = [];
         currentPage.value = 1;
+
+        // 2. If an initial record was passed, add it to the list
+        if (props.initialSelection) {
+            // Make sure the object structure is compatible
+            const recordToAdd = {
+                primary_id: props.initialSelection.primary_id || props.initialSelection.id,
+                title: props.initialSelection.title,
+                authors: props.initialSelection.authors
+            };
+            addRecord(recordToAdd);
+        }
+        
         fetchRecords();
     } else {
         selectedRecords.value = [];

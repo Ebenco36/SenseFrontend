@@ -2,24 +2,18 @@
   <v-app>
     <v-main class="bg-grey-lighten-4">
       <v-container fluid class="pa-6">
-        <h1 class="text-h4 font-weight-bold mb-2">Visualizations</h1>
+        <h1 class="text-h4 font-weight-bold mb-2">Visual Summary</h1>
         <p class="text-medium-emphasis mb-6">An interactive overview of systematic review papers.</p>
 
         <v-card border flat class="mb-6">
           <v-skeleton-loader v-if="isLoadingFilters" type="actions,actions"></v-skeleton-loader>
           <v-row v-else align="center" class="pa-4">
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="12">
               <v-label class="font-weight-medium mb-1">Filter by Publication Year</v-label>
-              <v-range-slider
-                v-model="yearRange"
-                :min="minYear"
-                :max="maxYear"
-                :step="1"
-                thumb-label="always"
-                hide-details
-              ></v-range-slider>
+              <v-range-slider v-model="yearRange" :min="minYear" :max="maxYear" :step="1" thumb-label="always"
+                hide-details></v-range-slider>
             </v-col>
-            <v-col cols="12" md="4">
+            <!-- <v-col cols="12" md="4">
                <v-label class="font-weight-medium mb-1">Filter by Topic</v-label>
                <v-select
                 v-model="selectedTopic"
@@ -31,13 +25,13 @@
                 clearable
                 hide-details
               ></v-select>
-            </v-col>
-             <v-col cols="12" md="2">
+            </v-col> -->
+            <!-- <v-col cols="12" md="2">
                 <v-btn block color="primary" variant="flat" @click="applyFilters" :loading="isLoadingData" class="mt-5">Apply</v-btn>
-             </v-col>
+             </v-col> -->
           </v-row>
         </v-card>
-        
+
         <v-skeleton-loader v-if="isLoadingData" type="card@4, image, image"></v-skeleton-loader>
         <div v-else>
           <v-row>
@@ -45,22 +39,16 @@
               <v-card border flat>
                 <v-card-text>
                   <div class="text-medium-emphasis">{{ stat.title }}</div>
-                  <div class="text-h4 font-weight-bold">{{ stat.value.toLocaleString() }}</div>
+                  <div class="text-h4 font-weight-bold">{{ stat.value?.toLocaleString() }}</div>
                 </v-card-text>
               </v-card>
             </v-col>
           </v-row>
-          
+
           <div class="mt-6">
             <h2 class="text-h5 font-weight-bold mb-4">Database & Source Overview</h2>
             <v-row>
-              <v-col
-                v-for="card in databaseCards"
-                :key="card.title"
-                cols="12"
-                sm="6"
-                md="3"
-              >
+              <v-col v-for="card in databaseCards" :key="card.title" cols="12" sm="6" md="3">
                 <v-card border flat class="h-100">
                   <v-card-item>
                     <template v-slot:prepend>
@@ -76,12 +64,7 @@
                       {{ card.count.toLocaleString() }}
                     </div>
                     <v-list v-if="card.distribution.length" density="compact" class="bg-transparent">
-                      <v-list-item
-                        v-for="dist in card.distribution"
-                        :key="dist.name"
-                        class="px-0"
-                        min-height="20"
-                      >
+                      <v-list-item v-for="dist in card.distribution" :key="dist.name" class="px-0" min-height="20">
                         <span class="text-body-2 text-medium-emphasis">{{ dist.name }}:</span>
                         <template v-slot:append>
                           <span class="font-weight-medium">{{ dist.count.toLocaleString() }}</span>
@@ -95,107 +78,108 @@
           </div>
 
           <v-row class="mt-2">
-             <v-col cols="12" lg="8">
+            <v-col cols="12" lg="8">
               <v-card border flat class="pa-2">
                 <v-card-item><v-card-title>Publications Over Time</v-card-title></v-card-item>
-                <v-card-text><apexchart type="area" height="350" :options="publicationsChart.chartOptions" :series="publicationsChart.series"></apexchart></v-card-text>
+                <v-card-text>
+                  <apexchart type="area" height="350" :options="publicationsChart.chartOptions"
+                    :series="publicationsChart.series"></apexchart>
+                </v-card-text>
               </v-card>
             </v-col>
-             <v-col cols="12" lg="4">
-               <v-card border flat class="pa-2">
-                 <v-card-item><v-card-title>Reviews by Quality</v-card-title><v-card-subtitle>AMSTAR 2 Rating (Dummy Data)</v-card-subtitle></v-card-item>
-                 <v-card-text><apexchart type="donut" height="350" :options="qualityChart.chartOptions" :series="qualityChart.series"></apexchart></v-card-text>
+            <v-col cols="12" lg="4">
+              <v-card border flat class="pa-2">
+                <v-card-item><v-card-title>Reviews by Quality</v-card-title><v-card-subtitle>AMSTAR 2 Rating (Dummy
+                    Data)</v-card-subtitle></v-card-item>
+                <v-card-text>
+                  <apexchart type="donut" height="350" :options="qualityChart.chartOptions"
+                    :series="qualityChart.series">
+                  </apexchart>
+                </v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="12" lg="6">
+
+            <!-- <v-col cols="12" lg="6">
                <v-card border flat class="pa-2">
                 <v-card-item><v-card-title>Top 5 Topics</v-card-title></v-card-item>
                  <v-card-text><apexchart type="bar" height="300" :options="topicsChart.chartOptions" :series="topicsChart.series"></apexchart></v-card-text>
               </v-card>
-            </v-col>
+            </v-col> -->
+
             <v-col cols="12" lg="6">
-               <v-card border flat class="pa-2">
-                 <v-card-item><v-card-title>Top 5 Countries by Lead Author</v-card-title></v-card-item>
-                 <v-card-text><apexchart type="bar" height="300" :options="countriesChart.chartOptions" :series="countriesChart.series"></apexchart></v-card-text>
+              <v-card border flat class="pa-2">
+                <v-card-item><v-card-title>Top 5 Countries by Lead Author</v-card-title></v-card-item>
+                <v-card-text>
+                  <apexchart type="bar" height="300" :options="countriesChart.chartOptions"
+                    :series="countriesChart.series">
+                  </apexchart>
+                </v-card-text>
               </v-card>
             </v-col>
+
+            <v-col cols="12" lg="6">
+              <v-card border flat class="pa-2">
+                <v-card-text>
+              <div class="mt-1">
+                <h2 class="text-h5 font-weight-bold mb-4">Database Duplicates By DOI</h2>
+                <v-row>
+                  <v-col v-for="item in duplicateByDoi" :key="item.source" cols="12" sm="6" md="4">
+                    <v-card border flat class="h-100">
+                      <v-card-item>
+                        <template v-slot:prepend>
+                          <v-avatar color="primary" variant="tonal" rounded="lg">
+                            <v-icon></v-icon>
+                          </v-avatar>
+                        </template>
+                        <v-card-title class="font-weight-bold">{{ item.source }}</v-card-title>
+                      </v-card-item>
+                      <v-card-text>
+                        <div class="text-h4 font-weight-bold mb-2">
+                          {{ item.count.toLocaleString() }}
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </div>
+
+              <div class="mt-1">
+                <h2 class="text-h5 font-weight-bold mb-4">Database Duplicates By Verification ID</h2>
+                <v-row>
+                  <v-col v-for="item in duplicateByVerifier" :key="item.source" cols="12" sm="6" md="4">
+                    <v-card border flat class="h-100">
+                      <v-card-item>
+                        <template v-slot:prepend>
+                          <v-avatar color="primary" variant="tonal" rounded="lg">
+                            <v-icon></v-icon>
+                          </v-avatar>
+                        </template>
+                        <v-card-title class="font-weight-bold">{{ item.source }}</v-card-title>
+                      </v-card-item>
+                      <v-card-text>
+                        <div class="text-h4 font-weight-bold mb-2">
+                          {{ item.count.toLocaleString() }}
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </div>
+              </v-card-text>
+              </v-card>
+            </v-col>
+
           </v-row>
 
-
-          <div class="mt-6">
-            <h2 class="text-h5 font-weight-bold mb-4">Database Duplicates By DOI</h2>
-            <v-row>
-              <v-col
-                v-for="item in duplicateByDoi"
-                :key="item.source"
-                cols="12"
-                sm="6"
-                md="3"
-              >
-                <v-card border flat class="h-100">
-                  <v-card-item>
-                    <template v-slot:prepend>
-                      <v-avatar color="primary" variant="tonal" rounded="lg">
-                        <v-icon ></v-icon>
-                      </v-avatar>
-                    </template>
-                    <v-card-title class="font-weight-bold">{{ item.source }}</v-card-title>
-                  </v-card-item>
-                  <v-card-text>
-                    <div class="text-h4 font-weight-bold mb-2">
-                      {{ item.count.toLocaleString() }}
-                    </div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
-          </div>
-
           <div class="mt-6">
             <h2 class="text-h5 font-weight-bold mb-4">Database Duplicates By Verification ID</h2>
             <v-row>
-              <v-col
-                v-for="item in duplicateByVerifier"
-                :key="item.source"
-                cols="12"
-                sm="6"
-                md="3"
-              >
-                <v-card border flat class="h-100">
-                  <v-card-item>
-                    <template v-slot:prepend>
-                      <v-avatar color="primary" variant="tonal" rounded="lg">
-                        <v-icon ></v-icon>
-                      </v-avatar>
-                    </template>
-                    <v-card-title class="font-weight-bold">{{ item.source }}</v-card-title>
-                  </v-card-item>
-                  <v-card-text>
-                    <div class="text-h4 font-weight-bold mb-2">
-                      {{ item.count.toLocaleString() }}
-                    </div>
-                  </v-card-text>
-                </v-card>
+              <v-col cols="12" sm="12" md="12">
+                <GraphView v-if="otherCharts?.charts.country_map" id="year_source_chart"
+                  :summary="otherCharts?.charts.country_map" label="" :show_loading="true" />
               </v-col>
             </v-row>
           </div>
-          <div class="mt-6">
-            <h2 class="text-h5 font-weight-bold mb-4">Database Duplicates By Verification ID</h2>
-            <v-row>
-              <v-col
-                cols="12"
-                sm="12"
-                md="12"
-              >
-                <GraphView 
-                  v-if="otherCharts?.charts.country_map" 
-                  id="year_source_chart"
-                  :summary="otherCharts?.charts.country_map" 
-                  label="" :show_loading="true"
-                />
-              </v-col>
-            </v-row>
-            </div>
 
         </div>
       </v-container>
@@ -314,8 +298,8 @@ const stats = computed(() => {
   const totalReviews = chartData.value.year_source.reduce((sum, item) => sum + item.record_count, 0);
   return [
     { title: 'Total Reviews Analyzed', value: totalReviews },
-    { title: 'Total Sources', value: chartData.value.source.length },
-    { title: 'Total Databases', value: chartData.value.ovid_grouping.length },
+    { title: 'Total Sources', value: chartData.value?.source?.length },
+    { title: 'Total Databases', value: chartData.value?.ovid_grouping?.length },
   ];
 });
 
@@ -381,30 +365,30 @@ const qualityChart = computed(() => {
 });
 
 const topicsChart = computed(() => {
-    const topTopics = allTopics.value.slice(0, 5);
-    const seriesData = topTopics.map(() => Math.floor(Math.random() * 100) + 20); // Dummy
-    return {
-        series: [{ name: 'Reviews', data: seriesData }],
-        chartOptions: {
-            chart: { type: 'bar', height: 300, toolbar: { show: false } },
-            xaxis: { categories: topTopics.map(t => mapper[t] || t.replace(/__/g, ' ')) },
-            plotOptions: { bar: { horizontal: true } }, colors: ['#00897B'],
-        },
-    };
+  const topTopics = allTopics.value.slice(0, 5);
+  const seriesData = topTopics.map(() => Math.floor(Math.random() * 100) + 20); // Dummy
+  return {
+    series: [{ name: 'Reviews', data: seriesData }],
+    chartOptions: {
+      chart: { type: 'bar', height: 300, toolbar: { show: false } },
+      xaxis: { categories: topTopics.map(t => mapper[t] || t.replace(/__/g, ' ')) },
+      plotOptions: { bar: { horizontal: true } }, colors: ['#00897B'],
+    },
+  };
 });
 
 const countriesChart = computed(() => {
-    if (!chartData.value?.country) return { series: [], chartOptions: {} };
-    const topCountries = chartData.value.country
-        .filter(c => c.country && c.country.trim() !== '' && c.country !== '[]')
-        .slice(0, 5);
-    return {
-        series: [{ name: 'Reviews', data: topCountries.map(c => c.record_count) }],
-        chartOptions: {
-            chart: { type: 'bar', height: 300, toolbar: { show: false } },
-            xaxis: { categories: topCountries.map(c => c.country) },
-            plotOptions: { bar: { horizontal: true } }, colors: ['#8E24AA'],
-        },
-    };
+  if (!chartData.value?.country) return { series: [], chartOptions: {} };
+  const topCountries = chartData.value.country
+    .filter(c => c.country && c.country.trim() !== '' && c.country !== '[]')
+    .slice(0, 5);
+  return {
+    series: [{ name: 'Reviews', data: topCountries.map(c => c.record_count) }],
+    chartOptions: {
+      chart: { type: 'bar', height: 300, toolbar: { show: false } },
+      xaxis: { categories: topCountries.map(c => c.country) },
+      plotOptions: { bar: { horizontal: true } }, colors: ['#8E24AA'],
+    },
+  };
 });
 </script>

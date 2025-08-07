@@ -53,3 +53,39 @@ export const formatAuthors = (authors) => {
   }
   return `${authors[0]} et al.`;
 };
+
+
+export const stringToList = (str, mappers) => {
+  // Return an empty array if the input is not a valid string
+  if (typeof str !== 'string' || !str) {
+    return [];
+  }
+
+  // 1. Convert the string to a clean list of keys
+  const keys = str
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
+
+  // 2. Map each key to its display value using the mapper
+  return keys.map(key => {
+    // Use the mapper value if it exists, otherwise, use the key as a fallback
+    return mappers[key] || key;
+  });
+};
+
+export const getLastItem = (inputString) => {
+  // Return undefined for null, undefined, or empty string input
+  if (!inputString || typeof inputString !== 'string') {
+    return undefined;
+  }
+  
+  // 1. Split the string into an array of items
+  const items = inputString.split(';');
+  
+  // 2. Get the last item from the array
+  const lastItem = items.pop();
+  
+  // 3. Return the item after trimming whitespace
+  return lastItem ? lastItem.trim() : undefined;
+}
