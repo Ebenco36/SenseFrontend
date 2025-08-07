@@ -78,7 +78,7 @@
           </div>
 
           <v-row class="mt-2">
-            <v-col cols="12" lg="8">
+            <v-col cols="12" lg="12">
               <v-card border flat class="pa-2">
                 <v-card-item><v-card-title>Publications Over Time</v-card-title></v-card-item>
                 <v-card-text>
@@ -87,7 +87,7 @@
                 </v-card-text>
               </v-card>
             </v-col>
-            <v-col cols="12" lg="4">
+            <!-- <v-col cols="12" lg="4">
               <v-card border flat class="pa-2">
                 <v-card-item><v-card-title>Reviews by Quality</v-card-title><v-card-subtitle>AMSTAR 2 Rating (Dummy
                     Data)</v-card-subtitle></v-card-item>
@@ -97,7 +97,7 @@
                   </apexchart>
                 </v-card-text>
               </v-card>
-            </v-col>
+            </v-col> -->
 
             <!-- <v-col cols="12" lg="6">
                <v-card border flat class="pa-2">

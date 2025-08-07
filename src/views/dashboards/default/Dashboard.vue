@@ -460,8 +460,42 @@ const updateFilterCounts = () => {
       }
       option.count = totalCount;
     });
+
+    // 🔽 Sort options by count descending (headers stay on top)
+    group.options.sort((a, b) => {
+      if (a.isHeader) return -1;
+      if (b.isHeader) return 1;
+      return b.count - a.count;
+    });
   });
 };
+
+// const updateFilterCounts = () => {
+//   if (!filterCounts.value || Object.keys(filterCounts.value).length === 0) return;
+
+//   sidebarFilterGroups.value.forEach(group => {
+//     group.options.forEach(option => {
+//       if (option.isHeader) return; // Skip headers
+
+//       let totalCount = 0;
+//       if (option.filterType === 'tag') {
+//         const countsForTag = filterCounts.value[option.code];
+//         if (Array.isArray(countsForTag)) {
+//           totalCount = countsForTag
+//             .filter(c => c.value !== 'nan')
+//             .reduce((sum, current) => sum + current.count, 0);
+//         }
+//       } else { // 'other' type
+//         const countsForGroup = filterCounts.value[group.title];
+//         if (Array.isArray(countsForGroup)) {
+//           const match = countsForGroup.find(c => String(c.value) === String(option.label));
+//           totalCount = match ? match.count : 0;
+//         }
+//       }
+//       option.count = totalCount;
+//     });
+//   });
+// };
 
 onMounted(() => {
   runSearch();
