@@ -9,12 +9,12 @@ const MainRoutes = {
     {
       name: 'LandingPage',
       path: '/',
-      component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+      component: () => import('@/views/dashboards/default/Dashboard.vue')
     },
     {
       name: 'Default',
       path: '/dashboard/default',
-      component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+      component: () => import('@/views/dashboards/default/Dashboard.vue')
     },
     {
       name: 'summary',
@@ -47,8 +47,43 @@ const MainRoutes = {
       component: () => import('@/views/documents/details.vue')
     },
     {
+      name: 'single_page',
+      path: '/single_page/:id',
+      component: () => import('@/views/documents/single_page.vue')
+    },
+    {
+      name: 'simple_table',
+      path: '/simple_table',
+      component: () => import('@/views/documents/simple_table.vue')
+    },
+    {
+      name: 'summary_page',
+      path: '/summary_page',
+      component: () => import('@/views/documents/summary_page.vue')
+    },
+    {
+      name: 'new_record',
+      path: '/new_record',
+      component: () => import('@/views/documents/new_record.vue')
+    },
+    {
+      name: 'about_page',
+      path: '/about_page',
+      component: () => import('@/views/documents/about_page.vue')
+    },
+    {
+      name: 'compare_record',
+      path: '/compare_record',
+      component: () => import('@/views/documents/compare_record.vue')
+    },
+    {
+      name: 'record_details_page',
+      path: '/record_details_page/:id',
+      component: () => import('@/views/documents/record_details_page.vue')
+    },
+    {
       name: 'testing',
-      path: '/testing',
+      path: '/testing/:id',
       component: () => import('@/views/documents/testing.vue')
     },
     {

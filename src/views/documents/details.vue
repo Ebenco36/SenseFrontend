@@ -342,7 +342,7 @@ h1 {
 }
 
 a {
-  color: #1e88e5;
+  color: #153a9d;
   text-decoration: none;
 }
 

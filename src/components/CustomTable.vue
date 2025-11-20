@@ -86,7 +86,7 @@
                 </template>
                 <template v-else-if="header.value === 'Title'">
                   <a
-                    :href="`/details/${item.primary_id}`"
+                    :href="`/record_details_page/${item.primary_id}`"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-decoration-none"
@@ -168,7 +168,7 @@
                 </template>
                 <template v-else-if="header.value === 'Title'">
                   <a
-                    :href="`/details/${item.primary_id}`"
+                    :href="`/record_details_page/${item.primary_id}`"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-decoration-none"
@@ -256,7 +256,7 @@
                 <!-- Clickable Title -->
                 <div class="text-h5 font-weight-bold mb-2" style="font-size: 1.2rem; color: black">
                   <a
-                    :href="`/details/${item.primary_id}`"
+                    :href="`/record_details_page/${item.primary_id}`"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-decoration-none"
@@ -286,7 +286,7 @@
                   <span v-if="item.DOI">
                     | DOI:
                     <a
-                      :href="`/details/${item.primary_id}`"
+                      :href="`/record_details_page/${item.primary_id}`"
                       target="_blank"
                       rel="noopener noreferrer"
                       @click.prevent="navigateToDetails(item.primary_id)"
@@ -389,7 +389,7 @@ onMounted(() => {
 });
 // Create a computed property to truncate the text
 function truncateAbstractText(text: string, length = 400) {
-  return text && text.length > length ? text.slice(0, length) + '...' : text;
+  return (text && text.length > length) ? text.slice(0, length) + '...' : text;
 }
 
 function getParsedData(str: string) {
@@ -475,7 +475,7 @@ const updatePageSize = (pageSize: number) => {
 const navigateToDetails = (id: string | undefined) => {
   if (id) {
     console.log(id);
-    router.push({ name: 'details', params: { id } });
+    router.push({ name: 'record_details_page', params: { id } });
   } else {
     console.error('Error: ID is missing');
   }

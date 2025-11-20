@@ -1,8 +1,8 @@
 // Mapper for various categories
 const mapper = {
-  Year: "Pulication Year",
+  Year: "Publication Year",
   vaccine__options: 'Vaccine Options',
-  vpd: 'Vaccine Preventable Diseases',
+  vpd: 'Disease/pathogen:',
   aden: 'Adenovirus',
   intervention: 'Intervention',
   outcome: 'Outcome',
@@ -98,7 +98,30 @@ const mapper = {
   quad: 'Quadrivalent',
   biva: 'Bivalent',
   en: 'English',
-  imu: 'Immunization'
+  imu: 'Immunocompromised',
+  region: "Region",
+  cg: 'Caregivers',
+  eld: 'Elderly',
+  hcw: 'Healthcare Workers',
+  imm: 'Immunocompromised',
+  pw: 'Pregnant Women',
+  tra: 'Travellers',
+  va: 'Vaccine/Vaccination',
+  hty: 'Healthy',
+  hcw: 'Healthcare Workers',
+  pcg: 'Parents/Caregivers',
+  chi_2__9: 'Children (2-9 years)',
+  adu_18__64: 'Adults (18+)',
+  eld_65__10000: 'Elderly (65+)',
+  nb_0__1: 'Newborn (< 1 years)',
+  ado_10__17: 'Adolescents (10-18 years)',
+  immune__status: 'Immune Status',
+  specific__group: 'Specific Group',
+  chi: 'Children',
+  ado: 'Adolescents',
+  adu: 'Adults',
+  eld: 'Elderly',
+  nb: 'Newborn',
 };
 
 export { mapper };

@@ -13,17 +13,8 @@ const sidebarMenu = shallowRef(sidebarItems);
 </script>
 
 <template>
-  <v-navigation-drawer
-    left
-    v-model="customizer.Sidebar_drawer"
-    elevation="0"
-    rail-width="75"
-    mobile-breakpoint="lg"
-    app
-    class="leftSidebar"
-    :rail="customizer.mini_sidebar"
-    expand-on-hover
-  >
+  <v-navigation-drawer left v-model="customizer.Sidebar_drawer" elevation="0" rail-width="75" mobile-breakpoint="lg" app
+    class="leftSidebar" :rail="customizer.mini_sidebar" expand-on-hover>
     <!---Logo part -->
 
     <!-- <div class="pa-5">
@@ -35,12 +26,19 @@ const sidebarMenu = shallowRef(sidebarItems);
     <div class="pa-5">
       <b style="font-weight: bolder">
         <img
-          :src="customizer.mini_sidebar ? '/senseLogoGG.png' : '/senseLogoSSS.png'"
-          :width="customizer.mini_sidebar ? 40 : 150"
+          :src="customizer.mini_sidebar ? '/sysvacAI.png' : '/sysvacAI.png'"
+          :width="customizer.mini_sidebar ? 30 : 150"
           alt="SENSE Logo"
         />
       </b>
     </div>
+    <!-- <div class="pa-5 text-center">
+      <b style="font-weight: bolder;">
+        <span class="logo-text">
+          {{ customizer.mini_sidebar ? 'SYSVAC AI' : 'SYSVAC AI' }}
+        </span>
+      </b>
+    </div> -->
 
     <!-- ---------------------------------------------- -->
     <!---Navigation -->
@@ -66,3 +64,15 @@ const sidebarMenu = shallowRef(sidebarItems);
     </perfect-scrollbar>
   </v-navigation-drawer>
 </template>
+<style scoped>
+.logo-text {
+  font-size: 24px;
+  color: #153a9d;
+  /* Example color */
+  line-height: 1;
+}
+
+* {
+  font-size: 1.5rem !important;
+}
+</style>

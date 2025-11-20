@@ -74,11 +74,11 @@ const customizer = useCustomizerStore();
     <!-- User Profile -->
     <!-- ---------------------------------------------- -->
     <v-menu :close-on-content-click="false">
-      <template v-slot:activator="{ props }">
+      <!-- <template v-slot:activator="{ props }">
         <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
-          <SettingsIcon stroke-width="1.5" />
+           <SettingsIcon stroke-width="1.5" />
         </v-btn>
-      </template>
+      </template> -->
       <v-sheet rounded="md" width="330" elevation="12">
         <ProfileDD />
       </v-sheet>

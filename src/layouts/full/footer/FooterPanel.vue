@@ -27,7 +27,7 @@ const footerLink = shallowRef([
         </p> -->
       </v-col>
       <v-col class="text-sm-right text-center" cols="12" sm="6">
-        <a
+        <!-- <a
           v-for="(item, i) in footerLink"
           :key="i"
           class="mx-2 text-body-1 text-darkText text-decoration-none"
@@ -35,7 +35,7 @@ const footerLink = shallowRef([
           :href="item.url"
         >
           {{ item.title }}
-        </a>
+        </a> -->
       </v-col>
     </v-row>
   </v-footer>

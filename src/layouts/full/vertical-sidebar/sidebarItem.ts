@@ -4,7 +4,8 @@ import {
   SumIcon,
   UserShareIcon,
   UserPinIcon,
-  TagOffIcon
+  PlusIcon,
+  TagOffIcon, TableFilledIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -33,33 +34,41 @@ const sidebarItem: menu[] = [
   },
   { divider: true },
   {
-    title: 'Data Exploration',
-    icon: TableIcon,
-    to: '/views'
-  },
-  { divider: true },
-  {
     title: 'Multiple Review',
-    icon: TagOffIcon,
-    to: '/multiple-review'
+    icon: TableIcon,
+    to: '/simple_table'
   },
   { divider: true },
   {
     title: 'Summary',
     icon: SumIcon,
-    to: '/summary'
+    to: '/summary_page',
   },
-  { divider: true },
-  {
-    title: 'Contact',
-    icon: UserShareIcon,
-    to: '/contact'
-  },
+  
   { divider: true },
   {
     title: 'About Us',
     icon: UserPinIcon,
     to: '/about-us'
+  },
+  
+  // { divider: true },
+  // {
+  //   title: 'Add New Record',
+  //   icon: PlusIcon,
+  //   to: '/new_record'
+  // },
+  // { divider: true },
+  // {
+  //   title: 'Data Exploration',
+  //   icon: TableFilledIcon,
+  //   to: '/simple_table'
+  // },
+  { divider: true },
+  {
+    title: 'Contact',
+    icon: UserShareIcon,
+    to: '/contact'
   },
   // { divider: true },
   // {
