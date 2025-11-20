@@ -1,8 +1,8 @@
 // Mapper for various categories
 const mapper = {
-  Year: "Pulication Year",
+  Year: "Publication Year",
   vaccine__options: 'Vaccine Options',
-  vpd: 'Vaccine Preventable Diseases',
+  vpd: 'Disease/pathogen:',
   aden: 'Adenovirus',
   intervention: 'Intervention',
   outcome: 'Outcome',

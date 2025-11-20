@@ -23,22 +23,22 @@ const sidebarMenu = shallowRef(sidebarItems);
       </b>
     </div> -->
 
-    <!-- <div class="pa-5">
+    <div class="pa-5">
       <b style="font-weight: bolder">
         <img
-          :src="customizer.mini_sidebar ? '/senseLogoGG.png' : '/senseLogoSSS.png'"
-          :width="customizer.mini_sidebar ? 40 : 150"
+          :src="customizer.mini_sidebar ? '/sysvacAI.png' : '/sysvacAI.png'"
+          :width="customizer.mini_sidebar ? 30 : 150"
           alt="SENSE Logo"
         />
       </b>
-    </div> -->
-    <div class="pa-5 text-center">
+    </div>
+    <!-- <div class="pa-5 text-center">
       <b style="font-weight: bolder;">
         <span class="logo-text">
           {{ customizer.mini_sidebar ? 'SYSVAC AI' : 'SYSVAC AI' }}
         </span>
       </b>
-    </div>
+    </div> -->
 
     <!-- ---------------------------------------------- -->
     <!---Navigation -->

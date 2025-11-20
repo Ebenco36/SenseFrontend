@@ -1,21 +1,83 @@
 <template>
   <v-app>
+    <!-- App Bar with Search -->
     <v-app-bar flat color="#153a9d" height="120">
       <v-container class="h-100 d-flex align-center ga-4">
-        <h1 class="text-h4 font-weight-bold text-white me-4 d-none d-md-block">Resources</h1>
+        <h1 class="text-h4 font-weight-bold text-white me-4 d-none d-md-block">
+          Resources
+        </h1>
+        
+        <!-- Search Bar with Field Selector -->
         <div class="d-flex flex-grow-1 align-center">
           <div class="d-flex flex-grow-1">
-            <v-text-field v-model="searchQuery" variant="solo" label="Keywords, authors, titles, ..."
-              density="comfortable" hide-details rounded="0" flat class="search-input"
-              @keydown.enter="triggerSearch"></v-text-field>
-            <v-btn height="48" color="#D95D45" variant="flat" class="find-btn font-weight-bold text-white"
-              @click="triggerSearch" :loading="isSearchLoading">
+            <!-- Search Field Selector -->
+            <v-menu>
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  variant="flat"
+                  color="white"
+                  height="48"
+                  class="search-field-selector"
+                  append-icon="mdi-chevron-down"
+                >
+                  {{ selectedSearchFieldLabel }}
+                </v-btn>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="field in searchFields"
+                  :key="field.value"
+                  :value="field.value"
+                  @click="state.searchField = field.value"
+                >
+                  <v-list-item-title>
+                    <v-icon :icon="field.icon" size="small" class="me-2" />
+                    {{ field.label }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+            
+            <!-- Search Input -->
+            <v-text-field 
+              v-model="state.searchQuery" 
+              variant="solo" 
+              label="Search..."
+              :placeholder="searchPlaceholder"
+              density="comfortable" 
+              hide-details 
+              rounded="0" 
+              flat 
+              class="search-input"
+              @keydown.enter="performSearch"
+            />
+            
+            <!-- Search Button -->
+            <v-btn 
+              height="48" 
+              color="#D95D45" 
+              variant="flat" 
+              class="find-btn font-weight-bold text-white"
+              @click="performSearch" 
+              :loading="state.isLoading"
+            >
               Find
             </v-btn>
           </div>
+          
+          <!-- Advanced Filter Button -->
           <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" size="large" icon="mdi-filter-variant" variant="text" class="ms-2" @click="dialog = true"></v-btn>
+            <template #activator="{ props }">
+              <v-btn 
+                v-bind="props" 
+                size="large" 
+                icon="mdi-filter-variant" 
+                variant="text" 
+                color="white"
+                class="ms-2" 
+                @click="state.showAdvancedFilters = true"
+              />
             </template>
             <span>Advanced Filtering</span>
           </v-tooltip>
@@ -23,51 +85,104 @@
       </v-container>
     </v-app-bar>
 
-    <v-main class="bg-white-lighten-2">
+
+    <!-- Main Content -->
+    <!-- <v-main class="bg-grey-lighten-4"> -->
+    <v-main >
       <v-container fluid class="py-8 px-md-8">
         <v-row>
-          <!-- Sidebar -->
+          <!-- Sidebar Filters -->
           <v-col cols="12" md="3">
             <div class="d-flex flex-column ga-6">
+              <!-- Selected Filters Card -->
               <v-card variant="outlined" flat>
-                <v-card-title class="text-subtitle-1 font-weight-bold">Selected Filters</v-card-title>
-                <v-divider></v-divider>
-                <v-card-text v-if="selectedChips.length > 0" class="filter-options-container">
-                  <v-chip size="small" v-for="chip in selectedChips" :key="chip" closable color="blue-lighten-1"
-                    class="font-weight-medium ma-1" @click:close="removeFilter(chip)">
-                    {{ chip }}
+                <v-card-title class="text-subtitle-1 font-weight-bold">
+                  Selected Filters
+                </v-card-title>
+                <v-divider />
+                
+                <v-card-text v-if="selectedFilters.length > 0" class="filter-chips-container">
+                  <v-chip 
+                    v-for="(filter, idx) in selectedFilters" 
+                    :key="idx" 
+                    size="small" 
+                    closable 
+                    color="primary"
+                    class="ma-1" 
+                    @click:close="removeFilter(filter)"
+                  >
+                    {{ filter.label }}
                   </v-chip>
                 </v-card-text>
+                                
+                <v-card-text v-else class="text-center text-medium-emphasis py-4">
+                  No filters selected
+                </v-card-text>
+                
                 <div class="px-4 pb-4">
-                  <v-btn variant="outlined" color="#D95D45" block @click="clearAllFilters"
-                    :disabled="!selectedChips.length">Clear All</v-btn>
+                  <v-btn 
+                    variant="outlined" 
+                    color="error" 
+                    block 
+                    @click="clearAllFilters"
+                    :disabled="!selectedFilters.length"
+                  >
+                    Clear All
+                  </v-btn>
                 </div>
               </v-card>
               
-              <v-card v-if="sidebarFilterGroups.length" variant="outlined" v-for="group in sidebarFilterGroups"
-                :key="group.title">
-                <v-card-title class="text-subtitle-1 font-weight-bold">{{ group.title }}</v-card-title>
-                <v-divider></v-divider>
+              <!-- Filter Groups -->
+              <v-card 
+                v-for="group in sidebarFilterGroups"
+                :key="group.title"
+                variant="outlined"
+              >
+                <v-card-title class="d-flex align-center justify-space-between pa-3">
+                  <span class="text-subtitle-1 font-weight-bold">{{ formatLabel(group.title) }}</span>
+                  
+                  <!-- Sort Toggle Button -->
+                  <v-btn
+                    :icon="group.sortMode === 'alphabetical' ? 'mdi-sort-alphabetical-ascending' : 'mdi-sort-numeric-descending'"
+                    size="small"
+                    variant="text"
+                    @click="toggleGroupSort(group)"
+                  >
+                    <v-icon />
+                    <v-tooltip activator="parent" location="top">
+                      {{ group.sortMode === 'alphabetical' ? 'Sort by count' : 'Sort alphabetically' }}
+                    </v-tooltip>
+                  </v-btn>
+                </v-card-title>
+                <v-divider />
+                
                 <v-list density="compact" class="py-0 filter-options-container">
-                  <template v-for="option in group.options" :key="option.label" >
-                    <!-- Render a subheader for group titles -->
-                     <div >
-                    <v-list-subheader v-if="option.isHeader" class="font-weight-bold text-primary">
-                      {{ option.label }}
+                  <template v-for="option in getSortedOptions(group)" :key="option.label">
+                    <!-- Group Header -->
+                    <v-list-subheader 
+                      v-if="option.isHeader" 
+                      class="font-weight-bold"
+                    >
+                      {{ formatLabel(option.label) }}
                     </v-list-subheader>
-                    <!-- Render a clickable list item for actual filters -->
-                    <v-list-item v-else class="px-1" @click="toggleFilterSelection(option)">
-                      <template v-slot:prepend>
-                        <v-checkbox-btn :model-value="option.selected"></v-checkbox-btn>
+                    
+                    <!-- Filter Option -->
+                    <v-list-item 
+                      v-else
+                      @click="toggleFilter(option, group)"
+                    >
+                      <template #prepend>
+                        <v-checkbox-btn :model-value="option.selected" />
                       </template>
-                      <v-list-item-title class="text-body-2 font-weight-medium">
-                        {{ replaceWithMapper(option.label) }}
+                      <v-list-item-title class="text-body-2">
+                        {{ formatLabel(option.label) }}
                       </v-list-item-title>
-                      <template v-slot:append v-if="group.title !== 'Topics'">
-                        <span class="text-black text-body-1">({{ option.count.toLocaleString() }})</span>
+                      <template #append>
+                        <span class="text-caption text-medium-emphasis">
+                          ({{ option.count?.toLocaleString() ?? 0 }})
+                        </span>
                       </template>
                     </v-list-item>
-                  </div>
                   </template>
                 </v-list>
               </v-card>
@@ -80,686 +195,1215 @@
               {{ pagination.total_records.toLocaleString() }} results found
             </h2>
 
-            <v-card elevation="2" class="my-4 pa-2 bg-transparent">
+            <!-- Controls Bar -->
+            <v-card flat class="mb-4 pa-4">
               <v-row align="center" dense>
-                <v-col cols="12" sm="auto">
-                  <v-select v-model="pagination.page_size" :items="[10, 25, 50, 100]" label="Per Page" density="compact"
-                    variant="outlined" hide-details style="max-width: 120px;"></v-select>
+                <v-col cols="auto">
+                  <v-select 
+                    v-model="pagination.page_size" 
+                    :items="[10, 25, 50, 100]" 
+                    label="Per Page" 
+                    density="compact"
+                    variant="outlined" 
+                    hide-details 
+                    style="width: 120px;"
+                    @update:model-value="handlePageSizeChange"
+                  />
                 </v-col>
-                <v-col cols="12" sm="auto">
-                  <v-select v-model="sortByField" :items="sortOptions" item-title="title" item-value="key"
-                    label="Order By" density="compact" variant="outlined" hide-details
-                    style="max-width: 200px;"></v-select>
+                
+                <v-col cols="auto">
+                  <v-select 
+                    v-model="state.sortBy" 
+                    :items="sortOptions" 
+                    item-title="title" 
+                    item-value="key"
+                    label="Sort By" 
+                    density="compact" 
+                    variant="outlined" 
+                    hide-details
+                    style="width: 180px;"
+                    @update:model-value="triggerSearch"
+                  />
                 </v-col>
-                <v-col cols="12" sm="auto">
-                  <v-btn-toggle v-model="sortByOrder" mandatory variant="outlined" density="compact">
-                    <v-btn value="ASC" icon="mdi-arrow-up"></v-btn>
-                    <v-btn value="DESC" icon="mdi-arrow-down"></v-btn>
+                
+                <v-col cols="auto">
+                  <v-btn-toggle 
+                    v-model="state.sortOrder" 
+                    mandatory 
+                    variant="outlined" 
+                    density="compact"
+                    @update:model-value="triggerSearch"
+                  >
+                    <v-btn value="asc" icon="mdi-arrow-up" title="Ascending" />
+                    <v-btn value="desc" icon="mdi-arrow-down" title="Descending" />
                   </v-btn-toggle>
                 </v-col>
-                <v-spacer></v-spacer>
-                <v-col cols="12" sm="auto">
+                
+                <v-spacer />
+                
+                <v-col cols="auto">
                   <div class="d-flex ga-2">
-                    <v-btn variant="tonal" @click="download('csv')" :loading="isDownloading.csv">CSV</v-btn>
-                    <v-btn variant="tonal" @click="download('excel')" :loading="isDownloading.excel">Excel</v-btn>
-                    <v-btn variant="tonal" @click="download('json')" :loading="isDownloading.json">Json</v-btn>
+                    <v-btn 
+                      variant="outlined" 
+                      prepend-icon="mdi-download"
+                      @click="downloadData('csv')" 
+                      :loading="state.isExporting.csv"
+                    >
+                      CSV
+                    </v-btn>
+                    <v-btn 
+                      variant="outlined" 
+                      prepend-icon="mdi-download"
+                      @click="downloadData('excel')" 
+                      :loading="state.isExporting.excel"
+                    >
+                      Excel
+                    </v-btn>
+                    <v-btn 
+                      variant="outlined" 
+                      prepend-icon="mdi-download"
+                      @click="downloadData('json')" 
+                      :loading="state.isExporting.excel"
+                    >
+                      Json
+                    </v-btn>
                   </div>
                 </v-col>
-                <!-- <v-col cols="12" sm="auto">
-                  <div class="d-flex align-center ga-1">
-                    <span class="text-body-2 text-medium-emphasis me-1">Download:</span>
-                    <v-tooltip location="top" text="Download CSV">
-                      <template v-slot:activator="{ props }">
-                        <v-btn v-bind="props" icon="mdi-file-csv-outline" variant="text" @click="download('csv')"
-                          :loading="isDownloading.csv"></v-btn>
-                      </template>
-                    </v-tooltip>
-                    <v-tooltip location="top" text="Download Excel">
-                      <template v-slot:activator="{ props }">
-                        <v-btn v-bind="props" icon="mdi-file-excel-outline" variant="text" @click="download('excel')"
-                          :loading="isDownloading.excel"></v-btn>
-                      </template>
-                    </v-tooltip>
-                  </div>
-                </v-col> -->
               </v-row>
             </v-card>
 
-            <div v-if="isSearchLoading" class="text-center py-16">
-              <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-              <p class="mt-4 text-medium-emphasis">Searching for resources...</p>
+            <!-- Loading State -->
+            <div v-if="state.isLoading" class="text-center py-16">
+              <v-progress-circular indeterminate color="primary" size="64" />
+              <p class="mt-4 text-medium-emphasis">Searching...</p>
             </div>
+
+            <!-- Results List -->
             <div v-else class="d-flex flex-column ga-4">
-              <!-- <v-card v-for="item in searchResults" :key="item.primary_id" variant="outlined" hover flat>
+              <!-- <v-card 
+                v-for="item in searchResults" 
+                :key="item.primary_id" 
+                variant="outlined" 
+                hover
+              >
                 <v-card-text class="pa-6">
-                  <div>
-                    <p class="text-body-2 text-medium-emphasis mb-1">
-                      {{ item.year }} &middot; {{ item.authors }} {{ item.country ? `(${item.country})` : "" }}
+                  <div class="mb-3">
+                    <p class="text-body-2 text-medium-emphasis mb-2">
+                      {{ item.year }} · {{ item.authors }}
+                      <span v-if="item.country"> · {{ item.country }}</span>
                     </p>
-                    <a href="#" @click.prevent="navigateToDetails(item.primary_id)"
-                      class="text-h6 font-weight-bold text-blue-darken-4 result-title d-block mb-3">
+                    <a 
+                      href="#" 
+                      @click.prevent="navigateToDetails(item.primary_id)"
+                      class="text-h6 font-weight-bold text-primary result-title"
+                    >
                       {{ item.title }}
                     </a>
                   </div>
-                  
-                  <div class="d-flex align-center ga-4">
-    
-                    <div style="flex-grow: 1; flex-basis: 80%; min-width: 0;">
-                      <v-chip-group v-if="item.notes">
-                        <v-chip v-for="note in item.notes" :key="note" color="blue-lighten-4" size="small" variant="tonal">
-                          {{ note }}
-                        </v-chip>
-                      </v-chip-group>
-                    </div>
 
-                    <div style="flex-shrink: 0; flex-basis: 20%; text-align: right;">
-                      <v-chip-group v-if="item.notes">
-                        <v-chip v-for="note in item.research_notes" :key="note" color="blue-lighten-4" size="small" variant="tonal">
-                          {{ note }}
-                        </v-chip>
-                      </v-chip-group>
-                    </div>
+                  <v-divider class="my-4" />
 
+                  <v-row dense>
+                    <v-col cols="12" sm="4">
+                      <div class="text-caption text-medium-emphasis">Studies</div>
+                      <div class="font-weight-medium">{{ item.num_of_studies || 'N/A' }}</div>
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                      <div class="text-caption text-medium-emphasis">Last Search</div>
+                      <div class="font-weight-medium">{{ item.date_of_literature_search || 'N/A' }}</div>
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                      <div class="text-caption text-medium-emphasis">Publication</div>
+                      <div class="font-weight-medium">{{ item.publication_date || 'N/A' }}</div>
+                    </v-col>
+                  </v-row>
+
+                  <div v-if="item.publication_type" class="mt-3">
+                    <v-chip size="small" color="primary" variant="tonal">
+                      {{ item.publication_type }}
+                    </v-chip>
                   </div>
                 </v-card-text>
               </v-card> -->
-              <v-card v-for="item in searchResults" :key="item.primary_id" variant="outlined" hover elevation="1">
+              
+              <v-card 
+                v-for="item in searchResults"
+                :key="item.primary_id" 
+                variant="outlined" 
+                hover
+                class="result-card"
+              >
                 <v-card-text class="pa-6">
-                  <div>
-                    <p class="text-body-2 text-medium-emphasis mb-1">
-                      {{ item.year }} &middot; {{ item.authors }} {{ item.country ? `(${item.country})` : "" }}
-                    </p>
-                    <a href="#" @click.prevent="navigateToDetails(item.primary_id)"
-                      class="text-h6 font-weight-bold text-blue-darken-4 result-title d-block mb-3">
-                      {{ item.title }}
-                    </a>
-                  </div>
-
-                  <v-divider class="my-4"></v-divider>
-
-                  <div>
-                    <v-row dense>
-                      <v-col cols="12" sm="4">
-                        <div class="text-caption text-medium-emphasis">Number of Studies</div>
-                        <div class="font-weight-bold">{{ item.num_of_studies }}</div>
-                      </v-col>
-                      <v-col cols="12" sm="4">
-                        <div class="text-caption text-medium-emphasis">Last Literature Search</div>
-                        <div class="font-weight-bold">{{ item.date_of_literature_search }}</div>
-                      </v-col>
-                      <v-col cols="12" sm="4">
-                        <div class="text-caption text-medium-emphasis">Publication Date</div>
-                        <div class="font-weight-bold">{{ item.publication_date }}</div>
-                      </v-col>
-                    </v-row>
-                    <div v-if="item.publication_type" class="mt-3">
-                      <v-chip size="small" color="blue-lighten-5" text-color="blue-darken-2" variant="flat">
-                        {{ item.publication_type }}
+                  <!-- Header Info -->
+                  <div class="mb-4">
+                    <div class="d-flex align-center flex-wrap ga-2 mb-2">
+                      <v-chip 
+                        v-if="item.year" 
+                        size="small" 
+                        variant="tonal"
+                      >
+                        {{ item.year }}
+                      </v-chip>
+                      <v-chip 
+                        v-if="item.overallConf && item.overallConf !== 'N/A'"
+                        :color="getConfidenceColor(item.overallConf)" 
+                        size="small" 
+                        variant="tonal"
+                      >
+                        {{ item.overallConf }}
+                      </v-chip>
+                      <v-chip
+                        v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess.toLowerCase().includes('open access')"
+                        color="success"
+                        size="small"
+                        variant="tonal"
+                      >
+                        OA
                       </v-chip>
                     </div>
+                    
+                    <!-- Title -->
+                    <a 
+                      href="#"
+                      @click.prevent="navigateToDetails(item.primary_id)"
+                      class="text-h6 font-weight-bold result-title d-block mb-2"
+                    >
+                      {{ item.title }}
+                    </a>
+                    
+                    <!-- Authors -->
+                    <p class="text-body-2 text-medium-emphasis mb-0">
+                      {{ formatAuthors(item.authors) }}
+                      <span v-if="item.country"> · {{ item.country }}</span>
+                    </p>
                   </div>
 
-                  <v-divider class="my-4" v-if="item.notes.length > 0"></v-divider>
+                  <!-- Abstract -->
+                  <div v-if="item.abstract" class="mb-4">
+                    <p class="text-body-2">
+                      {{ item.isAbstractExpanded ? item.abstract : truncateText(item.abstract, 300) }}
+                      <a
+                        v-if="item.abstract.length > 300"
+                        href="#"
+                        class="read-more-link ms-1"
+                        @click.prevent="item.isAbstractExpanded = !item.isAbstractExpanded"
+                      >
+                        {{ item.isAbstractExpanded ? 'Show Less' : 'Show More' }}
+                      </a>
+                    </p>
+                  </div>
 
-                  <div v-if="item.notes.length > 0">
-                    <div class="text-caption text-medium-emphasis">Notes</div>
+                  <v-divider class="my-4" />
+
+                  <!-- Metadata Grid -->
+                  <v-row dense class="mb-4">
+                    <v-col cols="6" sm="3">
+                      <div class="text-caption text-medium-emphasis">Studies</div>
+                      <div class="font-weight-bold">{{ item.num_of_studies || 'N/A' }}</div>
+                    </v-col>
+                    <v-col cols="6" sm="3">
+                      <div class="text-caption text-medium-emphasis">Last Search</div>
+                      <div class="font-weight-bold">{{ item.date_of_literature_search || 'N/A' }}</div>
+                    </v-col>
+                    <v-col cols="6" sm="3">
+                      <div class="text-caption text-medium-emphasis">Published</div>
+                      <div class="font-weight-bold">{{ item.publication_date || 'N/A' }}</div>
+                    </v-col>
+                    <v-col cols="6" sm="3">
+                      <div class="text-caption text-medium-emphasis">Type</div>
+                      <div class="font-weight-bold">{{ item.publication_type || 'N/A' }}</div>
+                    </v-col>
+                  </v-row>
+
+                  <!-- Tags Section -->
+                  <div v-if="(item.research_notes && item.research_notes.length > 0) || (item.notes && item.notes.length > 0)" class="mb-4">
                     <v-chip-group>
-                      <v-chip v-for="note in [...item.notes]" :key="note" size="small">
+                      <v-chip v-for="note in item.research_notes" :key="`rn-${note}`" size="small" color="blue-grey-lighten-4">
+                        {{ note }}
+                      </v-chip>
+                      <v-chip v-for="note in item.notes" :key="`n-${note}`" size="small" variant="outlined">
                         {{ note }}
                       </v-chip>
                     </v-chip-group>
                   </div>
 
-                  <v-divider class="my-4" v-if="item.research_notes.length > 0"></v-divider>
-
-                  <div v-if="item.research_notes.length > 0">
-                    <div class="text-caption text-medium-emphasis">Diseases:</div>
-                    <v-chip-group>
-                      <v-chip v-for="note in [...item.research_notes]" :key="note" size="small">
-                        {{ note }}
-                      </v-chip>
-                    </v-chip-group>
-                  </div>
+                  <!-- Action Button -->
+                  <v-btn 
+                    variant="tonal" 
+                    color="primary" 
+                    size="small"
+                    :href="item.link" 
+                    target="_blank"
+                    prepend-icon="mdi-open-in-new"
+                  >
+                    View Article
+                  </v-btn>
                 </v-card-text>
               </v-card>
+
+
+
+              <!-- No Results -->
+              <div v-if="searchResults.length === 0" class="text-center py-12">
+                <v-icon icon="mdi-database-search" size="64" color="grey" />
+                <p class="text-h6 mt-4">No results found</p>
+                <p class="text-body-2 text-medium-emphasis">
+                  Try adjusting your filters or search query
+                </p>
+              </div>
             </div>
-            <v-pagination v-if="!isSearchLoading && pagination.total_pages > 1" v-model="pagination.current_page"
-              :length="pagination.total_pages" @update:modelValue="handlePageChange" class="mt-8"></v-pagination>
+
+            <!-- Pagination -->
+            <v-pagination 
+              v-if="!state.isLoading && pagination.total_pages > 1" 
+              v-model="pagination.current_page"
+              :length="pagination.total_pages" 
+              @update:model-value="handlePageChange" 
+              class="mt-8"
+            />
           </v-col>
         </v-row>
       </v-container>
     </v-main>
 
-    <AdvancedFilterModal v-show="dialog" v-model="dialog" :initial-filters="currentAdvancedFilters"
-      @apply-filters="handleApplyFilters" />
+    <!-- Advanced Filter Dialog -->
+    <AdvancedFilterDialog 
+      v-model="state.showAdvancedFilters"
+      @apply-filters="handleApplyFilters" 
+    />
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent, computed, watch } from 'vue';
+import { ref, reactive, computed, onMounted, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { mapper } from '@/services/index.js';
-import { stringToList, getLastItem } from '@/utils/helpers.js';
 
-// --- TYPE DEFINITIONS ---
-interface ServerItem { 
-  primary_id: number; title: string; authors: string; year: number | string; 
-  publication_type: string; country: string; pdf_url: string; 
-  research_notes: string[]; notes: string[];
-  date_of_literature_search: string; num_of_studies: number; publication_date: string;
-}
-interface FilterOption { label: string; selected: boolean; count: number; filterType: 'tag' | 'other'; synonyms: string[]; isHeader?: boolean; }
-interface FilterGroup { title: string; options: FilterOption[]; }
-interface Pagination { current_page: number; page_size: number; total_pages: number; total_records: number; }
-interface AdditionalField { column: string; value: any; type: string; }
-interface FilterPayload { user_selections?: string[]; additional_fields?: AdditionalField[]; }
-type FilterCounts = Record<string, { count: number; value: string }[]>;
+// Components
+const AdvancedFilterDialog = defineAsyncComponent(() => 
+  import('@/components/AdvancedFilterDialog.vue')
+);
 
-type FileType = 'csv' | 'excel' | 'json' | 'pdf';
-
-// --- COMPONENT IMPORTS & STATE ---
-const AdvancedFilterModal = defineAsyncComponent(() => import('@/components/AdvancedFilterModal.vue'));
 const router = useRouter();
-const dialog = ref(false);
-const searchQuery = ref('');
-const isSearchLoading = ref(false);
-const searchResults = ref<ServerItem[]>([]);
+
+// Types
+interface FilterOption {
+  label: string;
+  selected: boolean;
+  count: number;
+  isHeader?: boolean;
+  column?: string;
+  synonyms?: string[];
+  code?: string;
+}
+
+interface FilterGroup {
+  title: string;
+  key?: string;
+  options: FilterOption[];
+  sortMode: 'alphabetical' | 'count';
+}
+
+interface SearchResult {
+  primary_id: number;
+  title: string;
+  authors: string;
+  year: number | string;
+  country: string;
+  publication_type: string;
+  notes: string[];
+  research_notes: string[];
+  date_of_literature_search: string;
+  num_of_studies: number;
+  publication_date: string;
+  link: string;
+  abstract: string;
+  overallConf: string;
+  openAccess: string;
+  location_in_title: string;
+  isAbstractExpanded?: boolean;
+}
+
+interface Pagination {
+  current_page: number;
+  page_size: number;
+  total_pages: number;
+  total_records: number;
+}
+// Search Fields Configuration
+interface SearchField {
+  value: string;
+  label: string;
+  icon: string;
+  placeholder: string;
+}
+
+const searchFields: SearchField[] = [
+  {
+    value: 'all',
+    label: 'All Fields',
+    icon: 'mdi-text-search',
+    placeholder: 'Search across title, authors, abstract, keywords...'
+  },
+  {
+    value: 'title',
+    label: 'Title Only',
+    icon: 'mdi-format-title',
+    placeholder: 'Search in titles...'
+  },
+  {
+    value: 'authors',
+    label: 'Authors',
+    icon: 'mdi-account-multiple',
+    placeholder: 'Search by author names...'
+  },
+  {
+    value: 'abstract',
+    label: 'Abstract',
+    icon: 'mdi-text-box',
+    placeholder: 'Search in abstracts...'
+  },
+  // {
+  //   value: 'keywords',
+  //   label: 'Keywords/Topics',
+  //   icon: 'mdi-tag-multiple',
+  //   placeholder: 'Search in keywords and topics...'
+  // },
+  // {
+  //   value: 'journal',
+  //   label: 'Journal',
+  //   icon: 'mdi-book-open-page-variant',
+  //   placeholder: 'Search by journal name...'
+  // }
+];
+
+// Configuration
+const API_BASE = 'http://localhost:5400/api/v1';
+
+// State
+const state = reactive({
+  searchQuery: '',
+  searchField: 'all', // ← ADD THIS
+  sortBy: 'year',
+  sortOrder: 'desc',
+  isLoading: false,
+  showAdvancedFilters: false,
+  isExporting: {
+    csv: false,
+    excel: false,
+    json: false
+  }
+});
+
+// Add these computed properties
+const selectedSearchFieldLabel = computed(() => {
+  const field = searchFields.find(f => f.value === state.searchField);
+  return field ? field.label : 'All Fields';
+});
+
+const searchPlaceholder = computed(() => {
+  const field = searchFields.find(f => f.value === state.searchField);
+  return field ? field.placeholder : 'Search...';
+});
+
+// Data
 const sidebarFilterGroups = ref<FilterGroup[]>([]);
-const pagination = ref<Pagination>({ current_page: 1, page_size: 10, total_pages: 1, total_records: 0 });
-const filterCounts = ref<FilterCounts>({});
-let searchDebounceTimer: number | undefined;
-const currentAdvancedFilters = ref<FilterPayload>({ user_selections: [], additional_fields: [] });
-const isDownloading = ref({ csv: false, excel: false, json: false, pdf: false });
+const searchResults = ref<SearchResult[]>([]);
+const advancedFilterConditions = ref<any[]>([]);
 
+const pagination = reactive<Pagination>({
+  current_page: 1,
+  page_size: 10,
+  total_pages: 1,
+  total_records: 0
+});
 
-// const sortByField = ref('primary_id');
-// const sortByOrder = ref('ASC');
-const sortOptions = ref([
+const sortOptions = [
   { title: 'Relevance', key: 'primary_id' },
   { title: 'Publication Year', key: 'year' },
   { title: 'Title', key: 'title' },
-]);
-const currentSortBy = ref([{ key: 'primary_id', order: 'asc' }]);
+  { title: 'Authors', key: 'authors' }
+];
 
-// --- COMPUTED PROPERTIES ---
-const selectedChips = computed(() => {
-  const sidebarSelected = sidebarFilterGroups.value.flatMap(g => g.options).filter(o => o.selected && !o.isHeader).map(o => {
-    o.label = replaceWithMapper(o.label); return o.label;
+// Computed Properties
+// const selectedFilters = computed(() => {
+//   const filters: string[] = [];
+  
+//   // Sidebar selections
+//   sidebarFilterGroups.value.forEach(group => {
+//     group.options.forEach(option => {
+//       if (option.selected && !option.isHeader) {
+//         filters.push(`${group.title}: ${option.label}`);
+//       }
+//     });
+//   });
+  
+//   // Advanced filters
+//   advancedFilterConditions.value.forEach(condition => {
+//     if (condition.operator === 'between') {
+//       filters.push(`Year: ${condition.value[0]} - ${condition.value[1]}`);
+//     } else if (condition.operator === 'in') {
+//       filters.push(`${condition.field}: ${condition.values.join(', ')}`);
+//     } else {
+//       filters.push(`${condition.field}: ${condition.value}`);
+//     }
+//   });
+  
+//   return filters;
+// });
+
+
+// const selectedFilters = computed(() => {
+//   const filters: Array<{ label: string; raw: string; group: string; option: FilterOption }> = [];
+  
+//   // Sidebar selections
+//   sidebarFilterGroups.value.forEach(group => {
+//     group.options.forEach(option => {
+//       if (option.selected && !option.isHeader) {
+//         // Format the display text nicely
+//         const formattedLabel = `${group.title}: ${option.label}`;
+        
+//         filters.push({
+//           label: formattedLabel,
+//           raw: `${group.title}: ${option.label}`,
+//           group: group.title,
+//           option: option
+//         });
+//       }
+//     });
+//   });
+  
+//   // Advanced filters
+//   advancedFilterConditions.value.forEach(condition => {
+//     let formattedLabel = '';
+    
+//     if (condition.operator === 'between') {
+//       formattedLabel = `Year: ${condition.value[0]} - ${condition.value[1]}`;
+//     } else if (condition.operator === 'in') {
+//       formattedLabel = `${formatFieldName(condition.field)}: ${condition.values.join(', ')}`;
+//     } else {
+//       formattedLabel = `${formatFieldName(condition.field)}: ${condition.value}`;
+//     }
+    
+//     filters.push({
+//       label: formattedLabel,
+//       raw: formattedLabel,
+//       group: 'advanced',
+//       option: null as any
+//     });
+//   });
+  
+//   return filters;
+// });
+
+const selectedFilters = computed(() => {
+  const filters: Array<{ label: string; raw: string; group: string; option: FilterOption | null }> = [];
+  
+  // Sidebar selections
+  sidebarFilterGroups.value.forEach((group) => {
+    group.options.forEach((option) => {
+      if (option.selected && !option.isHeader) {
+        console.log(option)
+        // ✨ Use clean display label (e.g., "Infection" instead of "inf, infection:inf")
+        const displayLabel = option.label;
+        const formattedLabel = `${group.title}: ${displayLabel}`;
+        
+        filters.push({
+          label: formattedLabel,
+          raw: `${group.title}: ${displayLabel}`,
+          group: group.title,
+          option: option
+        });
+      }
+    });
   });
-  const advancedSelected = currentAdvancedFilters.value.user_selections || [];
-  const advancedAdditionalSelected = currentAdvancedFilters.value.additional_fields || [];
-  return [...new Set([...sidebarSelected, ...advancedAdditionalSelected.map(a => `${a.column}: ${a.value}`)])];
-  // return [...new Set([...sidebarSelected, ...advancedSelected, ...advancedAdditionalSelected])];
+  
+  // Advanced filters
+  advancedFilterConditions.value.forEach((condition) => {
+    let formattedLabel = '';
+    
+    if (condition.operator === 'between') {
+      formattedLabel = `Year: ${condition.value[0]} - ${condition.value[1]}`;
+    } else if (condition.operator === 'in' && condition.values) {
+      // ✨ For IN operator, show the values cleanly
+      // If it's from tag filters with synonyms, extract clean display names
+      const cleanValues = condition.values.map((val: string) => {
+        // Extract clean name from "infection:inf" format
+        const parts = val.split(':');
+        return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+      });
+      
+      // Show first 2 items, then "+ X more" if needed
+      if (cleanValues.length === 1) {
+        formattedLabel = `${formatFieldName(condition.field)}: ${cleanValues[0]}`;
+      } else if (cleanValues.length <= 2) {
+        formattedLabel = `${formatFieldName(condition.field)}: ${cleanValues.join(', ')}`;
+      } else {
+        const preview = cleanValues.slice(0, 2).join(', ');
+        const remaining = cleanValues.length - 2;
+        formattedLabel = `${formatFieldName(condition.field)}: ${preview} +${remaining} more`;
+      }
+    } else {
+      formattedLabel = `${formatFieldName(condition.field)}: ${condition.value}`;
+    }
+    
+    filters.push({
+      label: formattedLabel,
+      raw: formattedLabel,
+      group: 'advanced',
+      option: null as any
+    });
+  });
+  
+  return filters;
 });
+
+
+
+
+// const apiPayload = computed(() => {
+//   const conditions: any[] = [];
+  
+//   // Add search query (search across multiple fields)
+//   if (state.searchQuery) {
+//     conditions.push({
+//       field: 'title',
+//       operator: 'contains',
+//       value: state.searchQuery
+//     });
+//   }
+  
+//   // Add sidebar selections
+//   sidebarFilterGroups.value.forEach(group => {
+//     const selectedOptions = group.options
+//       .filter(opt => opt.selected && !opt.isHeader);
+    
+//     if (selectedOptions.length > 0) {
+//       selectedOptions.forEach(opt => {
+//         const column = opt.column || group.title.toLowerCase();
+//         conditions.push({
+//           field: column,
+//           operator: 'equals',
+//           value: opt.label
+//         });
+//       });
+//     }
+//   });
+  
+//   // Add advanced conditions
+//   conditions.push(...advancedFilterConditions.value);
+  
+//   return {
+//     table_name: 'all_db',
+//     search: {
+//       conditions: conditions,
+//       logic: 'AND'
+//     },
+//     sort_by: state.sortBy,
+//     sort_direction: state.sortOrder,
+//     page: pagination.current_page,
+//     per_page: pagination.page_size
+//   };
+// });
+
 
 
 const apiPayload = computed(() => {
-  const sidebarSelections = sidebarFilterGroups.value.flatMap(group =>
-    group.options.filter(opt => opt.selected && !opt.isHeader)
-  );
-  const sidebarUserSelections = sidebarSelections.filter(s => s.filterType === 'tag').flatMap(s => s.synonyms);
-  const sidebarAdditionalFields = sidebarSelections.filter(s => s.filterType === 'other').map(s => ({ column: s.column, value: s.label, type: 'where' }));
-
-  const payload: any = {
-    table_name: "all_db",
-    pagination: { page: pagination.value.current_page, page_size: pagination.value.page_size },
-    additional_fields: [...(currentAdvancedFilters.value.additional_fields || []), ...sidebarAdditionalFields],
-    user_selections: [...new Set([...(currentAdvancedFilters.value.user_selections || []), ...sidebarUserSelections])]
-  };
-  if (currentSortBy.value.length > 0) {
-    const sortItem = currentSortBy.value[0];
-    payload.order_by = [sortItem.key, sortItem.order.toUpperCase() as 'ASC' | 'DESC'];
-  }
-  if (searchQuery.value) {
-    payload.additional_fields.push({ column: "title", value: searchQuery.value, type: "orlikewhere" });
-  }
-  return payload;
-});
-
-
-const sortByField = computed({
-  get: () => currentSortBy.value[0]?.key || 'primary_id',
-  set: (newKey) => {
-    const currentOrder = currentSortBy.value[0]?.order || 'asc';
-    currentSortBy.value = [{ key: newKey, order: currentOrder }];
-  }
-});
-const sortByOrder = computed({
-  get: () => (currentSortBy.value[0]?.order || 'asc').toUpperCase() as 'ASC' | 'DESC',
-  set: (newOrder) => {
-    const currentKey = currentSortBy.value[0]?.key || 'primary_id';
-    currentSortBy.value = [{ key: currentKey, order: newOrder.toLowerCase() as 'asc' | 'desc' }];
-  }
-});
-
-// --- API & DATA LOGIC ---
-const loadSidebarFilters = async () => {
-  try {
-    const response = await axios.get('http://0.0.0.0:5400/api/v1/api/record/filters');
-    if (response.data?.data) buildSidebarFilters(response.data.data);
-  } catch (error) {
-    console.error('Failed to load sidebar filters:', error);
-  }
-};
-
-const runSearch = async () => {
-  isSearchLoading.value = true;
-
-  // const sidebarSelections = sidebarFilterGroups.value.flatMap(group => 
-  //     group.options.filter(opt => opt.selected && !opt.isHeader)
-  // );
-  // const sidebarUserSelections = sidebarSelections.filter(s => s.filterType === 'tag').flatMap(s => s.synonyms);
-  // const sidebarAdditionalFields = sidebarSelections.filter(s => s.filterType === 'other').map(s => ({ column: s.groupTitle, value: s.label, type: 'where' }));
-
-  // const payload: any = {
-  //   table_name: "all_db",
-  //   pagination: { page: pagination.value.current_page, page_size: pagination.value.page_size },
-  //   additional_fields: [...(currentAdvancedFilters.value.additional_fields || []), ...sidebarAdditionalFields],
-  //   user_selections: [...new Set([...(currentAdvancedFilters.value.user_selections || []), ...sidebarUserSelections])]
-  // };
-  // if (searchQuery.value) {
-  //   payload.additional_fields.push({ column: "title", value: searchQuery.value, type: "orlikewhere" });
-  // }
-
-  try {
-    const response = await axios.post('http://0.0.0.0:5400/api/v1/api/user-selection-process', apiPayload.value);
-    const apiData = response.data?.data?.data;
-    if (apiData && Array.isArray(apiData.records) && apiData.records.length > 0) {
-      searchResults.value = apiData.records.map((record: any): ServerItem => ({
-        primary_id: record.primary_id,
-        title: record.title || 'No title provided',
-        authors: formatAuthors(safeParseAuthors(record.authors)),
-        year: record.year || 'N/A',
-        publication_type: record.publication_type || '',
-        country: (record.country || '').replace(/[\[\]']/g, ''),
-        pdf_url: record.pdf_url || '',
-        notes: stringToList(record.notes || '', mapper) || '',
-        research_notes: stringToList(record.research_notes || '', mapper),
-        date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || '',
-        num_of_studies: record.study_country__hash__study_count__hash__count || 0,
-        publication_date: record.date || '',
-      }));
-      pagination.value = apiData.pagination || { current_page: 1, page_size: 10, total_pages: 1, total_records: 0 };
-      const filterCountsResponse = response.data?.data?.filter_counts_response;
-      if (filterCountsResponse?.data) {
-        filterCounts.value = filterCountsResponse.data;
-        updateFilterCounts();
-      }
+  const conditions: any[] = [];
+  
+  // Handle multi-field search with OR logic
+  if (state.searchQuery) {
+    if (state.searchField === 'all') {
+      conditions.push({
+        logic: 'OR',
+        conditions: [
+          { field: 'title', operator: 'contains', value: state.searchQuery },
+          { field: 'authors', operator: 'contains', value: state.searchQuery },
+          { field: 'abstract', operator: 'contains', value: state.searchQuery },
+          // { field: 'topic_notes', operator: 'contains', value: state.searchQuery },
+          // { field: 'research_notes', operator: 'contains', value: state.searchQuery },
+          // { field: 'journal', operator: 'contains', value: state.searchQuery }
+        ]
+      });
     } else {
-      searchResults.value = [];
-      pagination.value = { current_page: 1, page_size: 10, total_pages: 1, total_records: 0 };
+      conditions.push({
+        field: state.searchField,
+        operator: 'contains',
+        value: state.searchQuery
+      });
     }
-    searchResults.value = (apiData?.records || []).map((record: any): ServerItem => ({
-      primary_id: record.primary_id,
-      title: record.title || 'No title provided',
-      authors: formatAuthors(safeParseAuthors(record.authors)),
-      year: record.year || 'N/A',
-      publication_type: getLastItem(record.publication_type) || '',
-      country: (record.country || '').replace(/[\[\]']/g, ''),
-      pdf_url: record.pdf_url || '',
-      notes: stringToList(record.notes || '', mapper) || '',
-      research_notes: stringToList(record.research_notes || '', mapper),
-      date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || '',
-      num_of_studies: record.study_country__hash__study_count__hash__count || 0,
-      publication_date: record.date || '',
-    }));
-    pagination.value = apiData?.pagination || { current_page: 1, page_size: 10, total_pages: 1, total_records: 0 };
-    const filterCountsResponse = response.data?.data?.filter_counts_response;
-    if (filterCountsResponse?.data) {
-      filterCounts.value = filterCountsResponse.data;
-      updateFilterCounts();
+  }
+  
+  // Add sidebar selections with OR within groups
+  sidebarFilterGroups.value.forEach(group => {
+    const selectedOptions = group.options
+      .filter(opt => opt.selected && !opt.isHeader);
+    
+    if (selectedOptions.length > 0) {
+      const column = selectedOptions[0].column || group.title.toLowerCase();
+      
+      if (selectedOptions.length === 1) {
+        conditions.push({
+          field: column,
+          operator: 'equals',
+          value: selectedOptions[0].code || selectedOptions[0].label
+        });
+      } else {
+        conditions.push({
+          logic: 'OR',
+          conditions: selectedOptions.map(opt => ({
+            field: opt.column || column,
+            operator: 'equals',
+            value: opt.code || opt.label
+          }))
+        });
+      }
+    }
+  });
+  
+  // Add advanced conditions
+  conditions.push(...advancedFilterConditions.value);
+  
+  return {
+    table_name: 'all_db',
+    search: {
+      conditions: conditions,
+      logic: 'AND'
+    },
+    sort_by: state.sortBy,
+    sort_direction: state.sortOrder,
+    pagination: {                    // ← Use 'pagination' object
+      page: pagination.current_page,
+      page_size: pagination.page_size  // ← Keep as page_size (your backend reads this)
+    }
+  };
+});
+
+
+
+// Methods - HELPER FUNCTION (NOT A COMPUTED PROPERTY)
+const getSortedOptions = (group: FilterGroup): FilterOption[] => {
+  // Separate headers and regular options
+  const headers = group.options.filter(opt => opt.isHeader);
+  const regularOptions = group.options.filter(opt => !opt.isHeader);
+  
+  // Sort regular options based on current mode
+  let sortedRegular: FilterOption[];
+  if (group.sortMode === 'alphabetical') {
+    sortedRegular = [...regularOptions].sort((a, b) => 
+      a.label.localeCompare(b.label)
+    );
+  } else {
+    // Sort by count (descending)
+    sortedRegular = [...regularOptions].sort((a, b) => 
+      (b.count || 0) - (a.count || 0)
+    );
+  }
+  
+  // Combine headers and sorted options
+  return [...headers, ...sortedRegular];
+};
+
+const loadFilters = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/api/filters/tree`);
+    
+    if (response.data.success) {
+      buildSidebarFilters(response.data.data);
     }
   } catch (error) {
-    console.error('Search failed:', error);
-    searchResults.value = [];
-    pagination.value = { current_page: 1, page_size: 10, total_pages: 1, total_records: 0 };
-  } finally {
-    isSearchLoading.value = false;
+    console.error('Error loading filters:', error);
   }
 };
 
-// const updateFilterCounts = () => {
-//   if (!filterCounts.value) return;
-//   sidebarFilterGroups.value.forEach(group => {
-//     const countsForGroup = filterCounts.value[group.title];
-//     if (Array.isArray(countsForGroup)) {
-//       group.options.forEach(option => {
-//         if (!option.isHeader) {
-//           const match = countsForGroup.find(c => String(c.value) === String(option.label) && c.value && c.value !== "[]");
-//           option.count = match ? match.count : 0;
-//         }
-//       });
-//     } else {
-//       group.options.forEach(option => { if (!option.isHeader) option.count = 0; });
-//     }
-//   });
-// };
 
-const updateFilterCounts = () => {
-  if (!filterCounts.value || Object.keys(filterCounts.value).length === 0) return;
-
-  sidebarFilterGroups.value.forEach(group => {
-    group.options.forEach(option => {
-      if (option.isHeader) return; // Skip headers
-
-      let totalCount = 0;
-      if (option.filterType === 'tag') {
-        const countsForTag = filterCounts.value[option.code];
-        if (Array.isArray(countsForTag)) {
-          totalCount = countsForTag
-            .filter(c => c.value !== 'nan')
-            .reduce((sum, current) => sum + current.count, 0);
-        }
-      } else { // 'other' type
-        const countsForGroup = filterCounts.value[group.title];
-        if (Array.isArray(countsForGroup)) {
-          const match = countsForGroup.find(c => String(c.value) === String(option.label));
-          totalCount = match ? match.count : 0;
-        }
-      }
-      option.count = totalCount;
-    });
-
-    // 🔽 Sort options by count descending (headers stay on top)
-    group.options.sort((a, b) => {
-      if (a.isHeader) return -1;
-      if (b.isHeader) return 1;
-      return b.count - a.count;
-    });
-  });
+const formatFieldName = (fieldName: string): string => {
+  // Handle hash paths - extract last segment
+  if (fieldName.includes('__hash__')) {
+    const parts = fieldName.split('__');
+    fieldName = parts[parts.length - 1];
+  }
+  
+  // Handle topic_ prefix
+  if (fieldName.startsWith('topic_')) {
+    return 'Topic';
+  }
+  
+  // Handle intervention_ prefix
+  if (fieldName.startsWith('intervention_')) {
+    return 'Intervention';
+  }
+  
+  // Handle outcome_ prefix
+  if (fieldName.startsWith('outcome_')) {
+    return 'Outcome';
+  }
+  
+  // Handle popu_ prefix
+  if (fieldName.startsWith('popu_')) {
+    return 'Population';
+  }
+  
+  // Special cases
+  const specialCases: Record<string, string> = {
+    'amstar_label': 'AMSTAR Rating',
+    'region': 'Region',
+    'country': 'Country',
+    'year': 'Year',
+    'language': 'Language'
+  };
+  
+  if (specialCases[fieldName]) {
+    return specialCases[fieldName];
+  }
+  
+  // Default: capitalize and replace underscores
+  return fieldName
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
-// const updateFilterCounts = () => {
-//   if (!filterCounts.value || Object.keys(filterCounts.value).length === 0) return;
 
-//   sidebarFilterGroups.value.forEach(group => {
-//     group.options.forEach(option => {
-//       if (option.isHeader) return; // Skip headers
-
-//       let totalCount = 0;
-//       if (option.filterType === 'tag') {
-//         const countsForTag = filterCounts.value[option.code];
-//         if (Array.isArray(countsForTag)) {
-//           totalCount = countsForTag
-//             .filter(c => c.value !== 'nan')
-//             .reduce((sum, current) => sum + current.count, 0);
-//         }
-//       } else { // 'other' type
-//         const countsForGroup = filterCounts.value[group.title];
-//         if (Array.isArray(countsForGroup)) {
-//           const match = countsForGroup.find(c => String(c.value) === String(option.label));
-//           totalCount = match ? match.count : 0;
-//         }
-//       }
-//       option.count = totalCount;
-//     });
-//   });
-// };
-
-onMounted(() => {
-  runSearch();
-  loadSidebarFilters();
-});
-
-// --- EVENT HANDLERS ---
-const debouncedSearch = () => {
-  clearTimeout(searchDebounceTimer);
-  searchDebounceTimer = window.setTimeout(() => {
-    pagination.value.current_page = 1;
-    runSearch();
-  }, 500);
-};
-const handleApplyFilters = (filterData: FilterPayload) => {
-  pagination.value.current_page = 1;
-  currentAdvancedFilters.value = filterData;
-  dialog.value = false;
-  runSearch();
-};
-const handlePageChange = (page: number) => {
-  pagination.value.current_page = page;
-  runSearch();
-};
-const triggerSearch = () => {
-  pagination.value.current_page = 1;
-  runSearch();
-};
-const toggleFilterSelection = (option: FilterOption) => {
-  option.selected = !option.selected;
-  debouncedSearch();
-};
-
-// --- SIDEBAR LOGIC ---
-// const buildSidebarFilters = (availableFilters: any) => {
-//   const categories = [
-//     { key: 'topic', title: 'Topics', type: 'tag', column: 'topic' },
-//     { key: 'intervention', title: 'Interventions', type: 'tag', column: 'intervention' },
-//     { key: 'country', title: 'Country', type: 'other', column: 'country' },
-//     { key: 'year', title: 'Year', type: 'other', column: 'year' }
-//   ];
-
-//   const allGroups: FilterGroup[] = [];
-
-//   categories.forEach(category => {
-//     const tagFilterData = availableFilters.tag_filters?.[category.key];
-//     const otherFilterData = availableFilters.others?.[category.title] || availableFilters.others?.[category.key];
-
-//     if (category.key === 'topic' && tagFilterData) {
-//       const options: FilterOption[] = Object.entries(tagFilterData).map(([subCatKey, subCatValue]: [string, any]) => {
-//         const item = Object.values(subCatValue)[0] as any;
-//         return {
-//           label: subCatKey,
-//           selected: false,
-//           count: item.count || 0,
-//           filterType: 'tag',
-//           synonyms: item.synonyms || [item.display]
-//         };
-//       });
-//       if (options.length > 0) {
-//         allGroups.push({ title: category.title, options });
-//       }
-//     }
-//     else if (tagFilterData) {
-//       const mainGroupOptions: FilterOption[] = [];
-//       Object.entries(tagFilterData).forEach(([subGroupKey, subGroupValue]) => {
-//         mainGroupOptions.push({ label: replaceWithMapper(subGroupKey), isHeader: true, selected: false, count: 0, filterType: 'tag', synonyms: [] });
-//         const options: FilterOption[] = Object.entries(subGroupValue as object).map(([itemKey, itemValue]: [string, any]) => ({
-//           label: itemValue.display, selected: false, count: itemValue.count || 0,
-//           filterType: 'tag', synonyms: itemValue.synonyms || [itemValue.display]
-//         }));
-//         mainGroupOptions.push(...options);
-//       });
-//       if (mainGroupOptions.length > 0) {
-//         allGroups.push({ title: category.title, options: mainGroupOptions });
-//       }
-//     } else if (otherFilterData) {
-//       const options = otherFilterData.map((opt: any) => ({
-//         label: String(opt.name || opt), selected: false, count: opt.count || 0,
-//         filterType: 'other', synonyms: [], groupTitle: category.key
-//       }));
-//       if (options.length > 0) {
-//         allGroups.push({ title: category.title, options });
-//       }
-//     }
-//   });
-//   sidebarFilterGroups.value = allGroups;
-// };
-
-
+const HIDDEN_SIDEBAR_FILTERS = ['Region', 'Language', 'Population']; // Add any filters you want to hide
 const buildSidebarFilters = (availableFilters: any) => {
   const categories = [
-    { key: 'topic', title: 'Topics', type: 'tag', column: 'topic' }, 
-    { key: 'intervention', title: 'Interventions', type: 'tag', column: 'intervention' },
-    { key: 'Country', title: 'Country', type: 'other', column: 'country' }, 
-    { key: 'Year', title: 'Year', type: 'other', column: 'year' }
-  ];
-  const allGroups: FilterGroup[] = [];
-
+    { key: 'topic', title: 'Topics', type: 'tag' },
+    { key: 'intervention', title: 'Interventions', type: 'tag' },
+    { key: 'outcome', title: 'Outcomes', type: 'tag' },
+    { key: 'popu', title: 'Population', type: 'tag' },
+    { key: 'Country', title: 'Country', type: 'other' },
+    { key: 'Region', title: 'Region', type: 'other' },
+    { key: 'Year', title: 'Year', type: 'other' },
+    { key: 'Amstar_Label', title: 'AMSTAR 2 Rating', type: 'other' }
+  ].filter(cat => !HIDDEN_SIDEBAR_FILTERS.includes(cat.title));
+  
+  const groups: FilterGroup[] = [];
+  
   categories.forEach(category => {
-    const tagFilterData = availableFilters.tag_filters?.[category.key];
-    const otherFilterData = availableFilters.others?.[category.title] || availableFilters.others?.[category.key];
-
-    // ✅ FIX: Special handling for 'topic' to create a flat list
-    if (category.key === 'topic' && tagFilterData) {
-       const options: FilterOption[] = Object.entries(tagFilterData).map(([subCatKey, subCatValue]: [string, any]) => {
-        const item = Object.values(subCatValue)[0] as any;
-         return {
-          label: subCatKey,
-          selected: false,
-          count: item.count || 0,
-          filterType: 'tag',
-          synonyms: item.synonyms || [item.display]
-        };
+    const tagData = availableFilters.tag_filters?.[category.key];
+    const otherData = availableFilters.others?.[category.title] || availableFilters.others?.[category.key];
+    
+    if (category.type === 'tag' && tagData) {
+      const options: FilterOption[] = [];
+      
+      Object.entries(tagData).forEach(([groupKey, groupValue]: [string, any]) => {
+        if (groupKey === 'column') return;
+        
+        // Add header for Population groups
+        if (category.key === 'popu' && Object.keys(tagData).length > 2) {
+          options.push({
+            label: formatLabel(groupKey),
+            selected: false,
+            count: 0,
+            isHeader: true
+          });
+        }
+        
+        // Extract items
+        Object.entries(groupValue).forEach(([itemKey, itemValue]: [string, any]) => {
+          if (itemKey === 'column' || !itemValue || typeof itemValue !== 'object') return;
+          
+          if (itemValue.display) {
+            options.push({
+              label: itemValue.display,
+              selected: false,
+              count: 0,
+              column: itemValue.column || tagData.column,
+              synonyms: itemValue.synonyms || [itemValue.display],
+              code: itemKey,  // Backend key for matching
+              key: itemKey
+            });
+          }
+        });
       });
+      
       if (options.length > 0) {
-        allGroups.push({ title: category.title, options });
+        groups.push({ 
+          title: category.title,
+          key: category.key,  // ← ADD THIS: Store the backend key
+          options,
+          sortMode: 'alphabetical'
+        });
+      }
+    } else if (category.type === 'other' && otherData) {
+      const values = otherData.values || [];
+      const options: FilterOption[] = values.map((value: any) => ({
+        label: String(value),
+        selected: false,
+        count: 0,
+        column: otherData.column,
+        code: String(value),  // ← For 'other' types, code = the actual value
+        key: String(value)
+      }));
+      
+      if (options.length > 0) {
+        groups.push({ 
+          title: category.title,
+          key: category.key,  // ← ADD THIS: Store the backend key (e.g., 'amstar_label', 'country')
+          options,
+          sortMode: 'alphabetical'
+        });
       }
     }
-    else if (tagFilterData) {
-      const mainGroupOptions: FilterOption[] = [];
-      Object.entries(tagFilterData).forEach(([subGroupKey, subGroupValue]) => {
-        mainGroupOptions.push({ 
-          label: replaceWithMapper(subGroupKey), isHeader: true, selected: false, 
-          count: 0, filterType: 'tag', synonyms: [], column: '', code: '' 
-        });
-        const subOptions: FilterOption[] = Object.entries(subGroupValue as object).map(([itemKey, itemValue]: [string, any]) => ({
-          label: itemValue.display, selected: false, count: 0,
-          filterType: 'tag', synonyms: itemValue.synonyms || [], column: category.column, code: itemKey
-        }));
-        mainGroupOptions.push(...subOptions);
-      });
-      if (mainGroupOptions.length > 0) allGroups.push({ title: category.title, options: mainGroupOptions });
-    } 
-    // Logic for 'other' filters like Year and Country
-    else if (otherFilterData) {
-      const options = otherFilterData.map((opt: any) => ({ 
-          label: String(opt.name || opt), selected: false, count: 0,
-          filterType: 'other', synonyms: [], column: category.column, code: ''
+  });
+  
+  sidebarFilterGroups.value = groups;
+};
+
+const createDoiUrl = (textContainingDoi: string): string => {
+  if (!textContainingDoi) return '#';
+  const doiRegex = /10.\d{4,9}\/[-._;()/:A-Z0-9]+/i;
+  const match = textContainingDoi.match(doiRegex);
+  return match ? `https://doi.org/${match[0]}` : '#';
+};
+
+
+
+const performSearch = async () => {
+  state.isLoading = true;
+  
+  try {
+    const response = await axios.post(`${API_BASE}/filters/search`, apiPayload.value);
+    
+    if (response.data.success) {
+      const apiData = response.data.data;
+      searchResults.value = (apiData.records || []).map((record: any): SearchResult => ({
+        primary_id: record.primary_id,
+        title: record.title || 'Untitled',
+        authors: formatAuthors(record.authors),
+        link: createDoiUrl(record.doi),
+        abstract: record.abstract || '',
+        year: record.year,
+        country: (record.country || '').replace(/[\[\]']/g, ''),
+        date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || 'N/A',
+        num_of_studies: record.total_study_count || 0,
+        publication_date: record.date || 'N/A',
+        publication_type: record.publication_type || 'N/A',
+        notes: Array.isArray(record.notes) ? record.notes : [],
+        research_notes: Array.isArray(record.research_notes) ? record.research_notes : [],
+        location_in_title: record.location_in_title || '',
+        overallConf: record.amstar_label || 'N/A',
+        openAccess: record.open_access || 'N/A',
+        isAbstractExpanded: false,  // ← Initialize
       }));
-      if (options.length > 0) allGroups.push({ title: category.title, options });
+      
+      pagination.current_page = apiData.pagination.current_page;
+      pagination.page_size = apiData.pagination.page_size;
+      pagination.total_pages = apiData.pagination.total_pages;
+      pagination.total_records = apiData.pagination.total_records;
+      updateFilterCounts(apiData.filter_counts);
+    }
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.value = [];
+  } finally {
+    state.isLoading = false;
+  }
+};
+
+
+const updateFilterCounts = (counts: any) => {
+  if (!counts) return;
+  
+  console.log('Filter counts received from backend:', counts);
+  
+  Object.entries(counts).forEach(([filterName, filterCounts]: [string, any]) => {
+    // Try to match by title or by key
+    const group = sidebarFilterGroups.value.find(g =>
+      g.title.toLowerCase() === filterName.toLowerCase() ||
+      g.key?.toLowerCase() === filterName.toLowerCase()
+    );
+    
+    if (group && Array.isArray(filterCounts)) {
+      console.log(`Updating counts for group: ${group.title} (key: ${group.key})`);
+      
+      group.options.forEach(option => {
+        if (option.isHeader) return;
+        
+        // Try matching with multiple identifiers for robustness
+        const countData = filterCounts.find((c: any) => {
+          const countValue = String(c.value).toLowerCase().trim();
+          const optionLabel = String(option.label).toLowerCase().trim();
+          const optionCode = String(option.code || '').toLowerCase().trim();
+          const optionKey = String(option.key || '').toLowerCase().trim();
+          
+          // Match by code/key first (most reliable), then label as fallback
+          return countValue === optionCode || 
+                 countValue === optionKey || 
+                 countValue === optionLabel;
+        });
+        
+        if (countData) {
+          option.count = countData.count;
+          console.log(`  ✓ Matched "${option.label}" -> count: ${countData.count}`);
+        } else {
+          option.count = 0;
+          console.log(`  ✗ No match for "${option.label}" (code: ${option.code})`);
+        }
+      });
+    } else {
+      console.log(`⚠️  Could not find group for filter: ${filterName}`);
     }
   });
-  sidebarFilterGroups.value = allGroups;
 };
 
-const clearAllFilters = () => {
-  sidebarFilterGroups.value.forEach(group => group.options.forEach(option => option.selected = false));
-  currentAdvancedFilters.value = { user_selections: [], additional_fields: [] };
-  searchQuery.value = '';
-  runSearch();
-};
-const removeFilter = (labelToRemove: string) => {
-  let changed = false;
-  for (const group of sidebarFilterGroups.value) {
-    const option = group.options.find(opt => opt.label === labelToRemove);
-    if (option && option.selected) {
-      option.selected = false;
-      changed = true;
-      break;
-    }
-  }
-  const selections = new Set(currentAdvancedFilters.value.user_selections || []);
-  if (selections.has(labelToRemove)) {
-    selections.delete(labelToRemove);
-    currentAdvancedFilters.value.user_selections = Array.from(selections);
-    changed = true;
-  }
-  if (changed) runSearch();
+const toggleGroupSort = (group: FilterGroup) => {
+  // Toggle between alphabetical and count sorting
+  group.sortMode = group.sortMode === 'alphabetical' ? 'count' : 'alphabetical';
 };
 
-// --- WATCHERS ---
-watch(currentAdvancedFilters, (newFilters) => {
-  const selections = new Set(newFilters.user_selections || []);
-  sidebarFilterGroups.value.forEach(group => {
-    group.options.forEach(option => {
-      if (option.filterType === 'tag') {
-        option.selected = option.synonyms.some(syn => selections.has(syn));
+const downloadData = async (format: 'csv' | 'excel' | 'json') => {
+  state.isExporting[format] = true;
+  
+  try {
+    const payload = {
+      ...apiPayload.value,
+      export: format,
+      page: 1,
+      per_page: pagination.total_records
+    };
+    
+    const response = await axios.post(`${API_BASE}/search`, payload, {
+      responseType: 'blob'
+    });
+    
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `export_${Date.now()}.${format === 'excel' ? 'xlsx' : format}`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(`Export error:`, error);
+  } finally {
+    state.isExporting[format] = false;
+  }
+};
+
+const toggleFilter = (option: FilterOption, group: FilterGroup) => {
+  if (!option.isHeader) {
+    option.selected = !option.selected;
+    pagination.current_page = 1;
+    performSearch();
+  }
+};
+
+// const removeFilter = (label: string) => {
+//   const [groupName, filterName] = label.split(': ');
+  
+//   sidebarFilterGroups.value.forEach(group => {
+//     if (group.title === groupName) {
+//       group.options.forEach(option => {
+//         if (option.label === filterName) {
+//           option.selected = false;
+//         }
+//       });
+//     }
+//   });
+  
+//   advancedFilterConditions.value = advancedFilterConditions.value.filter(c =>
+//     !label.includes(`${c.field}:`)
+//   );
+  
+//   pagination.current_page = 1;
+//   performSearch();
+// };
+
+const removeFilter = (filter: { label: string; raw: string; group: string; option: FilterOption }) => {
+  if (filter.group === 'advanced') {
+    // Remove from advanced filters
+    const filterText = filter.raw;
+    advancedFilterConditions.value = advancedFilterConditions.value.filter(c => {
+      if (c.operator === 'between') {
+        return `Year: ${c.value[0]} - ${c.value[1]}` !== filterText;
+      } else if (c.operator === 'in') {
+        return `${formatFieldName(c.field)}: ${c.values.join(', ')}` !== filterText;
+      } else {
+        return `${formatFieldName(c.field)}: ${c.value}` !== filterText;
       }
     });
+  } else {
+    // Remove from sidebar filters
+    sidebarFilterGroups.value.forEach(group => {
+      if (group.title === filter.group) {
+        group.options.forEach(option => {
+          if (option === filter.option) {
+            option.selected = false;
+          }
+        });
+      }
+    });
+  }
+  
+  pagination.current_page = 1;
+  performSearch();
+};
+
+
+const clearAllFilters = () => {
+  sidebarFilterGroups.value.forEach(group => {
+    group.options.forEach(option => {
+      option.selected = false;
+    });
   });
-}, { deep: true });
+  
+  advancedFilterConditions.value = [];
+  state.searchQuery = '';
+  pagination.current_page = 1;
+  performSearch();
+};
+
+const triggerSearch = () => {
+  pagination.current_page = 1;
+  performSearch();
+};
+
+const handleApplyFilters = (filterData: any) => {
+  advancedFilterConditions.value = filterData.search?.conditions || [];
+  
+  if (filterData.sort_by) {
+    state.sortBy = filterData.sort_by;
+    state.sortOrder = filterData.sort_direction || 'desc';
+  }
+  
+  pagination.current_page = filterData.page || 1;
+  pagination.page_size = filterData.per_page || 10;
+  
+  state.showAdvancedFilters = false;
+  performSearch();
+};
+
+const handlePageChange = (page: number) => {
+  pagination.current_page = page;
+  performSearch();
+};
+
+const handlePageSizeChange = () => {
+  pagination.current_page = 1;
+  performSearch();
+};
+
+const navigateToDetails = (id: number) => {
+  router.push({ name: 'record_details_page', params: { id } });
+};
+
+const formatAuthors = (authors: string): string => {
+  if (!authors) return 'N/A';
+  
+  try {
+    const list = authors.split(/[,;]/).map(a => a.trim()).filter(Boolean);
+    if (list.length === 0) return 'N/A';
+    if (list.length === 1) return list[0];
+    if (list.length === 2) return `${list[0]} & ${list[1]}`;
+    return `${list[0]} et al.`;
+  } catch {
+    return authors;
+  }
+};
 
 
-// When the sort field or order changes, reset to page 1 and run a search
-watch([sortByField, sortByOrder], () => {
-  pagination.value.current_page = 1;
-  runSearch();
-});
+const truncateText = (text?: string, length = 100): string => {
+  if (!text) return 'N/A';
+  return text.length > length ? text.slice(0, length) + '...' : text;
+};
 
-// When the page size changes, reset to page 1 and run a search
-watch(() => pagination.value.page_size, () => {
-  pagination.value.current_page = 1;
-  runSearch();
-});
-
-
-// --- GENERAL HELPERS ---
-const navigateToDetails = (id: number) => router.push({ name: 'record_details_page', params: { id } });
-const replaceWithMapper = (key: string) => key ? (mapper[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())) : '';
+// Helper function to safely parse authors
 const safeParseAuthors = (authorsString?: string): string[] => {
-  if (!authorsString) return [];
+  if (!authorsString || typeof authorsString !== 'string') return [];
   try {
     return authorsString.trim().split(/[,;]/).map(a => a.trim().replace(/['"\[\]]/g, '')).filter(Boolean);
   } catch { return []; }
 };
-const formatAuthors = (authors: string[]): string => {
-  if (!Array.isArray(authors) || authors.length === 0) return 'N/A';
-  if (authors.length === 1) return authors[0];
-  if (authors.length === 2) return authors.join(' & ');
-  return `${authors[0]} et al.`;
-};
 
-// --- DOWNLOAD LOGIC ---
-const getFileMimeType = (file_type: FileType): string => {
-  switch (file_type) {
-    case 'csv': return 'text/csv';
-    case 'excel': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    case 'json': return 'application/json';
-    case 'pdf': return 'application/pdf';
-  }
-};
-const getFileExtension = (file_type: FileType): string => {
-  switch (file_type) {
-    case 'csv': return 'csv';
-    case 'excel': return 'xlsx';
-    case 'json': return 'json';
-    case 'pdf': return 'pdf';
+// Helper function for confidence color
+const getConfidenceColor = (confidence?: string): string => {
+  switch (confidence?.toLowerCase()) {
+    case 'high': return 'success';
+    case 'moderate': return 'warning';
+    case 'low': return 'error';
+    default: return 'grey';
   }
 };
 
-const download = async (file_type: FileType) => {
-  isDownloading.value[file_type] = true;
-  // This payload requests all records that match the current filters
-  const payload = { ...apiPayload.value, export: file_type, pagination: { page: 1, page_size: pagination.value.total_records } };
-
+const formatLabel = (key: string | undefined): string => {
+  if (!key) return '';
+  // Prefer mapped label when available, otherwise humanize the key
   try {
-    const response = await axios.post('http://0.0.0.0:5400/api/v1/api/user-selection-process', payload, { responseType: 'blob' });
-    const blob = new Blob([response.data], { type: getFileMimeType(file_type) });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `records_export.${getFileExtension(file_type)}`;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error(`Download failed for ${file_type}:`, error);
-  } finally {
-    isDownloading.value[file_type] = false;
+    const mapped = (mapper as Record<string, string> | undefined)?.[key];
+    return mapped ?? key.replace(/_/g, ' ');
+  } catch {
+    return key.replace(/_/g, ' ');
   }
 };
+// const formatLabel = (label: string): string => {
+//   // Use mapper if available
+//   if (mapper && mapper[label]) {
+//     return mapper[label];
+//   }
+  
+//   // Fallback to standard formatting
+//   return label
+//     .replace(/_/g, ' ')
+//     .replace(/\b\w/g, c => c.toUpperCase());
+// };
 
+// Lifecycle
+onMounted(() => {
+  loadFilters();
+  performSearch();
+});
 </script>
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
-.v-application {
-  font-family: 'Inter', sans-serif !important;
+<style scoped>
+.result-title {
+  text-decoration: none;
+  display: inline-block;
+  line-height: 1.4;
 }
 
-.search-input .v-field {
+.result-title:hover {
+  text-decoration: underline;
+}
+
+.filter-options-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.filter-options-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-options-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.filter-options-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.filter-options-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.filter-chips-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-field-selector {
+  border-radius: 0 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  min-width: 150px;
+}
+
+.search-input :deep(.v-field) {
   border-radius: 0 !important;
 }
 
@@ -769,16 +1413,33 @@ const download = async (file_type: FileType) => {
 
 .result-title {
   text-decoration: none;
+  color: #153a9d;
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s ease;
   line-height: 1.4;
-  display: inline-block;
 }
 
 .result-title:hover {
+  color: #D95D45;
   text-decoration: underline;
 }
 
-.filter-options-container {
-  max-height: 250px;
-  overflow-y: auto;
+.result-card {
+  transition: all 0.2s ease;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.read-more-link {
+  color: #1565C0;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.read-more-link:hover {
+  text-decoration: underline;
 }
 </style>
