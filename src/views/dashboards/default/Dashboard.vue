@@ -353,12 +353,20 @@
                         {{ item.overallConf }}
                       </v-chip>
                       <v-chip
-                        v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess.toLowerCase().includes('open access')"
+                        v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess =='open access'"
                         color="success"
                         size="small"
                         variant="tonal"
                       >
-                        OA
+                        Open Access
+                      </v-chip>
+                      <v-chip
+                        v-else
+                        color="danger"
+                        size="small"
+                        variant="tonal"
+                      >
+                        Not Open Access
                       </v-chip>
                     </div>
                     
@@ -374,7 +382,7 @@
                     <!-- Authors -->
                     <p class="text-body-2 text-medium-emphasis mb-0">
                       {{ formatAuthors(item.authors) }}
-                      <span v-if="item.country"> · {{ item.country }}</span>
+                      <!-- <span v-if="item.country"> · {{ item.country }}</span> -->
                     </p>
                   </div>
 
@@ -407,7 +415,7 @@
                     </v-col>
                     <v-col cols="6" sm="3">
                       <div class="text-caption text-medium-emphasis">Published</div>
-                      <div class="font-weight-bold">{{ item.publication_date || 'N/A' }}</div>
+                      <div class="font-weight-bold">{{ item.year || 'N/A' }}</div>
                     </v-col>
                     <v-col cols="6" sm="3">
                       <div class="text-caption text-medium-emphasis">Type</div>
@@ -1074,7 +1082,7 @@ const performSearch = async () => {
         title: record.title || 'Untitled',
         authors: formatAuthors(record.authors),
         link: createDoiUrl(record.doi),
-        abstract: record.abstract || '',
+        abstract: ((record.abstract && record.abstract != 'NULL') ? record.abstract : 'No abstract provided.')|| 'No abstract provided.',
         year: record.year,
         country: (record.country || '').replace(/[\[\]']/g, ''),
         date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || 'N/A',

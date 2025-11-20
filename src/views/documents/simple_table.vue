@@ -270,13 +270,23 @@
                     >
                       {{ item.overallConf }}
                     </v-chip>
+                     <!-- v-if="item.open_access && item.open_access !== 'N/A' && item.open_access.toLowerCase().includes('open access')" -->
                     <v-chip
-                      v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess.toLowerCase().includes('open access')"
+                      v-if="item.open_access && item.open_access !== 'N/A' && item.open_access == 'open access'"
                       color="success"
                       size="small"
                       variant="tonal"
                     >
-                      OA
+                      Open Access
+                    </v-chip>
+
+                    <v-chip
+                      v-else
+                      color="danger"
+                      size="small"
+                      variant="tonal"
+                    >
+                      Not Open Access
                     </v-chip>
                   </div>
                   
@@ -292,7 +302,7 @@
                   <!-- Authors -->
                   <p class="text-body-2 text-medium-emphasis mb-0">
                     {{ formatAuthors(item.authors) }}
-                    <span v-if="item.country"> · {{ item.country }}</span>
+                    <!-- <span v-if="item.country"> · {{ item.country ? item.country || item.country != 'NULL' : '' }}</span> -->
                   </p>
                 </div>
 
@@ -325,7 +335,7 @@
                   </v-col>
                   <v-col cols="6" sm="3">
                     <div class="text-caption text-medium-emphasis">Published</div>
-                    <div class="font-weight-bold">{{ item.publication_date || 'N/A' }}</div>
+                    <div class="font-weight-bold">{{ item.year || 'N/A' }}</div>
                   </v-col>
                   <v-col cols="6" sm="3">
                     <div class="text-caption text-medium-emphasis">Type</div>
@@ -462,8 +472,9 @@
                             </div>
                             <div>
                               <span class="text-caption text-medium-emphasis">Open Access:</span>
+                              <!-- && item.open_access == 'open access' -->
                               <v-chip
-                                v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess.toLowerCase().includes('open access')"
+                                v-if="item.open_access && item.open_access !== 'N/A' && item.open_access == 'open access'"
                                 color="success"
                                 size="small"
                                 variant="tonal"
@@ -471,7 +482,15 @@
                               >
                                 Open Access
                               </v-chip>
-                              <span v-else class="ms-2">N/A</span>
+                              <v-chip
+                                v-else
+                                color="danger"
+                                size="small"
+                                variant="tonal"
+                                class="ms-2"
+                              >
+                                Not Open Access
+                              </v-chip>
                             </div>
                           </v-col>
                           <v-col cols="12" md="6">
@@ -550,7 +569,7 @@ interface SearchResult {
   link: string;
   abstract: string;
   overallConf: string;
-  openAccess: string;
+  open_access: string;
   location_in_title: string;
   isAbstractExpanded?: boolean;
 }
@@ -802,7 +821,7 @@ const performSearch = async () => {
         title: record.title || 'Untitled',
         authors: formatAuthors(safeParseAuthors(record.authors)),
         link: createDoiUrl(record.doi),
-        abstract: record.abstract || '',
+        abstract: ((record.abstract && record.abstract != 'NULL') ? record.abstract : 'No abstract provided.')|| 'No abstract provided.',
         year: record.year,
         country: (record.country || '').replace(/[\[\]']/g, ''),
         date_of_literature_search: record.lit_search_dates__hash__dates__hash__dates || 'N/A',
@@ -813,7 +832,7 @@ const performSearch = async () => {
         research_notes: Array.isArray(record.research_notes) ? record.research_notes : [],
         location_in_title: record.location_in_title || '',
         overallConf: record.amstar_label || 'N/A',
-        openAccess: record.open_access || 'N/A',
+        open_access: record.open_access || 'N/A',
         isAbstractExpanded: false,
       }));
       

@@ -113,13 +113,13 @@
                   <div class="mb-6">
                     <h2 class="text-h6 font-weight-bold mb-4">Study Overview</h2>
                     <v-row>
-                      <v-col cols="6" sm="3">
+                      <v-col cols="6" sm="4">
                         <div class="stat-box">
                           <div class="stat-value">{{ record.numberOfStudies }}</div>
                           <div class="stat-label">Studies</div>
                         </div>
                       </v-col>
-                      <v-col cols="6" sm="3">
+                      <!-- <v-col cols="6" sm="3">
                         <div class="stat-box">
                           <div class="stat-value">{{ record.databases.length }}</div>
                           <div class="stat-label">
@@ -131,14 +131,14 @@
                             </span>
                           </div>
                         </div>
-                      </v-col>
-                      <v-col cols="6" sm="3">
+                      </v-col> -->
+                      <v-col cols="6" sm="4">
                         <div class="stat-box">
                           <div class="stat-value">{{ record.year }}</div>
                           <div class="stat-label">Published</div>
                         </div>
                       </v-col>
-                      <v-col cols="6" sm="3">
+                      <v-col cols="6" sm="4">
                         <div class="stat-box">
                           <div class="stat-value">{{ record.dateOfLiteratureSearch }}</div>
                           <div class="stat-label">Last Search</div>
@@ -156,7 +156,7 @@
                       <v-col cols="12" sm="6">
                         <div class="info-item">
                           <span class="info-label">Study Types</span>
-                          <span class="info-value">{{ record.studyTypes }}</span>
+                          <span class="info-value">{{ record.study_types }}</span>
                         </div>
                       </v-col>
                       <v-col cols="12" sm="6">
@@ -212,11 +212,12 @@
                     <p v-else class="text-body-2 text-grey">No diseases specified</p>
                   </div>
 
-                  <v-divider class="my-6" />
+                  <!-- <v-divider class="my-6" /> -->
 
                   <!-- Notes -->
-                  <div>
+                  <!-- <div>
                     <h3 class="text-subtitle-1 font-weight-bold mb-3">Notes</h3>
+                    {{ record.notes }}
                     <v-chip-group v-if="record.notes.length > 0">
                       <v-chip 
                         v-for="note in record.notes" 
@@ -228,7 +229,7 @@
                       </v-chip>
                     </v-chip-group>
                     <p v-else class="text-body-2 text-grey">No notes available</p>
-                  </div>
+                  </div> -->
                 </v-card-text>
               </v-card>
             </div>
@@ -446,7 +447,7 @@ interface Record {
   amstarRatings: Record<string, string>;
   amstarDetails: Record<string, any>;
   databases: string[];
-  studyTypes: string;
+  study_types: string;
   countryDistribution: string;
   population: string;
   amstarMet?: string | number;
@@ -600,7 +601,7 @@ const fetchRecord = async (id: string | string[]) => {
         authors: formatAuthors(safeParseAuthors(apiRecord.authors)),
         year: apiRecord.year || 'N/A',
         journal: apiRecord.journal || 'N/A',
-        abstract: apiRecord.abstract || 'No abstract provided.',
+        abstract: ((apiRecord.abstract && apiRecord.abstract != 'NULL') ? apiRecord.abstract : 'No abstract provided.')|| 'No abstract provided.',
         doiUrl: createDoiUrl(apiRecord.doi),
         pdfUrl: apiRecord.pdf_url !== 'NULL' ? apiRecord.pdf_url : null,
         country: (apiRecord.country || '').replace(/[\[\]']/g, ''),
@@ -616,7 +617,8 @@ const fetchRecord = async (id: string | string[]) => {
         amstarRatings: ratings,
         amstarDetails: details,
         databases: apiRecord.database_count ? stringToList(apiRecord.database_count) : [],
-        studyTypes: `RCT: ${apiRecord.total_rct_count || 0}, NRSI: ${apiRecord.total_nrsi_count || 0}`,
+        // studyTypes: `RCT: ${apiRecord.total_rct_count || 0}, NRSI: ${apiRecord.total_nrsi_count || 0}`,
+        study_types: apiRecord?.study_types,
         countryDistribution: apiRecord.study_country__hash__countries__hash__countries || 'N/A',
         population: apiRecord.target_population_in_title || 'N/A',
         amstarMet: apiRecord.amstar_met ? stringToList(apiRecord.amstar_met).length : 0

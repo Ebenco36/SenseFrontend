@@ -73,9 +73,9 @@
                         </template>
                       </v-list-item>
                     </v-list>
-                    <div v-else class="text-caption text-medium-emphasis">
+                    <!-- <div v-else class="text-caption text-medium-emphasis">
                       No breakdown available
-                    </div>
+                    </div> -->
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -110,7 +110,7 @@
             </v-col>
 
             <!-- Top Countries -->
-            <v-col cols="12" lg="6">
+            <v-col cols="12" lg="12">
               <v-card border flat class="h-100">
                 <v-card-item>
                   <v-card-title class="font-weight-bold">Top 5 Countries by Lead Author</v-card-title>
@@ -132,14 +132,14 @@
             </v-col>
 
             <!-- Duplicates Overview -->
-            <v-col cols="12" lg="6">
+            <!-- <v-col cols="12" lg="6">
               <v-card border flat class="h-100">
                 <v-card-item>
                   <v-card-title class="font-weight-bold">Database Duplicates Overview</v-card-title>
                 </v-card-item>
-                <v-card-text>
+                <v-card-text> -->
                   <!-- Duplicates by DOI -->
-                  <div class="mb-6">
+                  <!-- <div class="mb-6">
                     <h3 class="text-subtitle-1 font-weight-medium mb-3">By DOI</h3>
                     <v-row v-if="duplicateByDoi && duplicateByDoi.length > 0">
                       <v-col v-for="item in duplicateByDoi" :key="item.source" cols="6">
@@ -154,10 +154,10 @@
                     <v-alert v-else type="info" variant="tonal" density="compact">
                       No DOI duplicates found
                     </v-alert>
-                  </div>
+                  </div> -->
 
                   <!-- Duplicates by Verification ID -->
-                  <div>
+                  <!-- <div>
                     <h3 class="text-subtitle-1 font-weight-medium mb-3">By Verification ID</h3>
                     <v-row v-if="duplicateByVerifier && duplicateByVerifier.length > 0">
                       <v-col v-for="item in duplicateByVerifier" :key="item.source" cols="6">
@@ -172,10 +172,10 @@
                     <v-alert v-else type="info" variant="tonal" density="compact">
                       No verification ID duplicates found
                     </v-alert>
-                  </div>
-                </v-card-text>
+                  </div> -->
+                <!-- </v-card-text>
               </v-card>
-            </v-col>
+            </v-col> -->
           </v-row>
 
           <!-- Country Map (if available) -->
@@ -268,7 +268,7 @@ const API_BASE = 'http://0.0.0.0:5400/api/v1';
 const loadFilterOptions = async () => {
   isLoadingFilters.value = true;
   try {
-    const response = await axios.get(`${API_BASE}/visualizations/filters`);
+    const response = await axios.get(`${API_BASE}/api/filters/tree`);
     const data = response.data.data;
     
     minYear.value = data.minYear || 2010;
