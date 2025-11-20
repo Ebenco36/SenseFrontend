@@ -1165,7 +1165,7 @@ const downloadData = async (format: 'csv' | 'excel' | 'json') => {
       per_page: pagination.total_records
     };
     
-    const response = await axios.post(`${API_BASE}/search`, payload, {
+    const response = await axios.post(`${API_BASE}/filters/search`, payload, {
       responseType: 'blob'
     });
     
