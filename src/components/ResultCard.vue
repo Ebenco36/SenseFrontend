@@ -302,7 +302,6 @@ const safeArray = (value: any): string[] => {
  */
 const formatLabel = (key: string | undefined): string => {
   if (!key) return '';
-  
   try {
     // Check if mapper exists and has this key
     const mapped = (mapper as Record<string, string> | undefined)?.[key];

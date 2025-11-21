@@ -962,8 +962,12 @@ const performSearch = async () => {
         num_of_studies: record.total_study_count || 0,
         publication_date: record.date || 'N/A',
         publication_type: record.publication_type || 'N/A',
-        notes: Array.isArray(record.notes) ? record.notes : [],
-        research_notes: Array.isArray(record.research_notes) ? record.research_notes : [],
+        notes: Array.isArray(record.notes)
+        ? record.notes.filter(n => n && typeof n === 'string' && n.trim().toLowerCase() !== 'null')
+        : [],
+        research_notes: Array.isArray(record.research_notes)
+        ? record.research_notes.filter(n => n && typeof n === 'string' && n.trim().toLowerCase() !== 'null')
+        : [],
         location_in_title: record.location_in_title || '',
         overallConf: record.amstar_label || 'N/A',
         openAccess: record.open_access || 'N/A',
