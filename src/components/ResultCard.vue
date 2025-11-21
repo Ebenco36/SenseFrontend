@@ -240,9 +240,9 @@ const isExpanded = ref(false);
 // ==========================================
 
 const isOpenAccess = computed(() => {
-  return props.item.open_access && 
-         props.item.open_access !== 'N/A' && 
-         props.item.open_access.toLowerCase() === 'open access';
+  return props.item.openAccess && 
+         props.item.openAccess !== 'N/A' && 
+         props.item.openAccess.toLowerCase() === 'open access';
 });
 
 const formattedAuthors = computed(() => {
