@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-main class="bg-grey-lighten-5">
+    <v-main >
       <!-- Loading State -->
       <v-container v-if="state.isLoading" class="d-flex justify-center align-center" style="min-height: 80vh;">
         <div class="text-center">
@@ -40,11 +40,11 @@
                   <v-icon icon="mdi-calendar" size="20" class="me-1" />
                   {{ record.year }}
                 </span>
-                <v-divider v-if="record.journal" vertical class="mx-2" style="height: 20px;" />
+                <!-- <v-divider v-if="record.journal" vertical class="mx-2" style="height: 20px;" />
                 <span v-if="record.journal" class="text-grey-darken-2">
                   <v-icon icon="mdi-book-open-page-variant" size="20" class="me-1" />
                   {{ record.journal }}
-                </span>
+                </span> -->
               </div>
             </div>
 
@@ -119,19 +119,6 @@
                           <div class="stat-label">Studies</div>
                         </div>
                       </v-col>
-                      <!-- <v-col cols="6" sm="3">
-                        <div class="stat-box">
-                          <div class="stat-value">{{ record.databases.length }}</div>
-                          <div class="stat-label">
-                            <span 
-                              class="clickable-label"
-                              @click="openListDialog('Databases Searched', record.databases)"
-                            >
-                              Databases
-                            </span>
-                          </div>
-                        </div>
-                      </v-col> -->
                       <v-col cols="6" sm="4">
                         <div class="stat-box">
                           <div class="stat-value">{{ record.year }}</div>
@@ -179,15 +166,15 @@
                   <!-- Topics -->
                   <div class="mb-6">
                     <h3 class="text-subtitle-1 font-weight-bold mb-3">Topics</h3>
-                    <v-chip-group v-if="record.topics.length > 0">
+                    <v-chip-group v-if="safeArray(record.topics).length > 0">
                       <v-chip 
-                        v-for="topic in record.topics" 
-                        :key="topic" 
+                        v-for="(topic, index) in safeArray(record.topics)" 
+                        :key="`topic-${topic}-${index}`" 
                         size="default"
                         variant="tonal"
                         color="primary"
                       >
-                        {{ topic }}
+                        {{ formatLabel(topic) }}
                       </v-chip>
                     </v-chip-group>
                     <p v-else class="text-body-2 text-grey">No topics specified</p>
@@ -198,10 +185,10 @@
                   <!-- Diseases -->
                   <div class="mb-6">
                     <h3 class="text-subtitle-1 font-weight-bold mb-3">Diseases</h3>
-                    <v-chip-group v-if="record.diseases.length > 0">
+                    <v-chip-group v-if="safeArray(record.diseases).length > 0">
                       <v-chip 
-                        v-for="disease in record.diseases" 
-                        :key="disease" 
+                        v-for="(disease, index) in safeArray(record.diseases)" 
+                        :key="`disease-${disease}-${index}`" 
                         size="default"
                         variant="tonal"
                         color="blue-grey"
@@ -212,16 +199,15 @@
                     <p v-else class="text-body-2 text-grey">No diseases specified</p>
                   </div>
 
-                  <!-- <v-divider class="my-6" /> -->
+                  <v-divider class="my-6" />
 
                   <!-- Notes -->
                   <!-- <div>
                     <h3 class="text-subtitle-1 font-weight-bold mb-3">Notes</h3>
-                    {{ record.notes }}
-                    <v-chip-group v-if="record.notes.length > 0">
+                    <v-chip-group v-if="safeArray(record.notes).length > 0">
                       <v-chip 
-                        v-for="note in record.notes" 
-                        :key="note" 
+                        v-for="(note, index) in safeArray(record.notes)" 
+                        :key="`note-${note}-${index}`" 
                         size="default"
                         variant="outlined"
                       >
@@ -252,7 +238,7 @@
                   
                   <div class="info-row">
                     <span class="info-row-label">Date</span>
-                    <span class="info-row-value">{{ record.publicationDate || 'N/A' }}</span>
+                    <span class="info-row-value">{{ record.year || 'N/A' }}</span>
                   </div>
                   
                   <v-divider class="my-3" />
@@ -434,15 +420,15 @@ interface Record {
   abstract: string;
   doiUrl: string;
   pdfUrl: string | null;
-  topics: string[];
+  topics: string[] | string;
   country: string;
   numberOfStudies: number | string;
   publicationDate: string;
   dateOfLiteratureSearch: string;
   publicationType: string;
   openAccess: string;
-  notes: string[];
-  diseases: string[];
+  notes: string[] | string;
+  diseases: string[] | string;
   confidence: string;
   amstarRatings: Record<string, string>;
   amstarDetails: Record<string, any>;
@@ -483,11 +469,36 @@ const record = ref<Record | null>(null);
 const amstarQuestions = ref<AmstarQuestion[]>([]);
 
 // Helper Functions
+
+/**
+ * Safely convert value to array
+ */
+const safeArray = (value: any): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === 'string') {
+    // Handle comma-separated strings
+    return value.split(',').map((v: string) => v.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+/**
+ * Format label using mapper or humanize
+ */
 const formatLabel = (label: string): string => {
   if (!label) return '';
+  
+  // Check mapper first
   const mapped = mapper[label];
   if (mapped) return mapped;
-  return label.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+  
+  // Fallback: humanize
+  return label
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 const createDoiUrl = (doi: string): string => {
@@ -497,8 +508,13 @@ const createDoiUrl = (doi: string): string => {
   return match ? `https://doi.org/${match[0]}` : '#';
 };
 
-const stringToList = (str?: string): string[] => {
+const stringToList = (str?: string | string[]): string[] => {
+  // ✅ Handle array input
+  if (Array.isArray(str)) return str.filter(Boolean);
+  
+  // ✅ Handle string input
   if (typeof str !== 'string' || !str) return [];
+  
   return str.split(/[,;]/).map(item => item.trim()).filter(Boolean);
 };
 
@@ -590,9 +606,10 @@ const fetchRecord = async (id: string | string[]) => {
       questions.sort((a, b) => a.id - b.id);
       amstarQuestions.value = questions;
 
-      // Process topics with mapper
-      const topicKeys = stringToList(apiRecord.topic_notes);
-      const mappedTopics = topicKeys.map(key => formatLabel(key));
+      // ✅ Process topics/notes/diseases - they're already arrays from middleware
+      const topics = stringToList(apiRecord.topic_notes);
+      const notes = stringToList(apiRecord.notes);
+      const diseases = stringToList(apiRecord.research_notes);
 
       // Build record object
       record.value = {
@@ -601,7 +618,7 @@ const fetchRecord = async (id: string | string[]) => {
         authors: formatAuthors(safeParseAuthors(apiRecord.authors)),
         year: apiRecord.year || 'N/A',
         journal: apiRecord.journal || 'N/A',
-        abstract: ((apiRecord.abstract && apiRecord.abstract != 'NULL') ? apiRecord.abstract : 'No abstract provided.')|| 'No abstract provided.',
+        abstract: ((apiRecord.abstract && apiRecord.abstract != 'NULL') ? apiRecord.abstract : 'No abstract provided.') || 'No abstract provided.',
         doiUrl: createDoiUrl(apiRecord.doi),
         pdfUrl: apiRecord.pdf_url !== 'NULL' ? apiRecord.pdf_url : null,
         country: (apiRecord.country || '').replace(/[\[\]']/g, ''),
@@ -610,14 +627,13 @@ const fetchRecord = async (id: string | string[]) => {
         dateOfLiteratureSearch: apiRecord.lit_search_dates__hash__dates__hash__dates || 'N/A',
         publicationType: apiRecord.publication_type || 'N/A',
         openAccess: apiRecord.open_access || 'N/A',
-        notes: stringToList(apiRecord.notes),
-        topics: mappedTopics,
-        diseases: stringToList(apiRecord.research_notes),
+        notes: notes,
+        topics: topics,
+        diseases: diseases,
         confidence: apiRecord.amstar_label || 'N/A',
         amstarRatings: ratings,
         amstarDetails: details,
         databases: apiRecord.database_count ? stringToList(apiRecord.database_count) : [],
-        // studyTypes: `RCT: ${apiRecord.total_rct_count || 0}, NRSI: ${apiRecord.total_nrsi_count || 0}`,
         study_types: apiRecord?.study_types,
         countryDistribution: apiRecord.study_country__hash__countries__hash__countries || 'N/A',
         population: apiRecord.target_population_in_title || 'N/A',

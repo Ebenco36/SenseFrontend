@@ -1,89 +1,16 @@
 <template>
   <v-app>
     <!-- App Bar with Search -->
-    <v-app-bar flat color="#153a9d" height="120">
-      <v-container class="h-100 d-flex align-center ga-4">
-        <h1 class="text-h4 font-weight-bold text-white me-4 d-none d-md-block">
-          Resources
-        </h1>
-        
-        <!-- Search Bar with Field Selector -->
-        <div class="d-flex flex-grow-1 align-center">
-          <div class="d-flex flex-grow-1">
-            <!-- Search Field Selector -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="flat"
-                  color="white"
-                  height="48"
-                  class="search-field-selector"
-                  append-icon="mdi-chevron-down"
-                >
-                  {{ selectedSearchFieldLabel }}
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="field in searchFields"
-                  :key="field.value"
-                  :value="field.value"
-                  @click="state.searchField = field.value"
-                >
-                  <v-list-item-title>
-                    <v-icon :icon="field.icon" size="small" class="me-2" />
-                    {{ field.label }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-            
-            <!-- Search Input -->
-            <v-text-field 
-              v-model="state.searchQuery" 
-              variant="solo" 
-              label="Search..."
-              :placeholder="searchPlaceholder"
-              density="comfortable" 
-              hide-details 
-              rounded="0" 
-              flat 
-              class="search-input"
-              @keydown.enter="performSearch"
-            />
-            
-            <!-- Search Button -->
-            <v-btn 
-              height="48" 
-              color="#D95D45" 
-              variant="flat" 
-              class="find-btn font-weight-bold text-white"
-              @click="performSearch" 
-              :loading="state.isLoading"
-            >
-              Find
-            </v-btn>
-          </div>
-          
-          <!-- Advanced Filter Button -->
-          <v-tooltip location="bottom">
-            <template #activator="{ props }">
-              <v-btn 
-                v-bind="props" 
-                size="large" 
-                icon="mdi-filter-variant" 
-                variant="text" 
-                color="white"
-                class="ms-2" 
-                @click="state.showAdvancedFilters = true"
-              />
-            </template>
-            <span>Advanced Filtering</span>
-          </v-tooltip>
-        </div>
-      </v-container>
-    </v-app-bar>
+    <SearchBar
+      v-model="state.searchQuery"
+      v-model:search-field="state.searchField"
+      title="Resources"
+      :search-fields="searchFields"
+      :loading="state.isLoading"
+      :placeholder="searchPlaceholder"
+      @search="performSearch"
+      @advanced-filter="state.showAdvancedFilters = true"
+    />
 
 
     <!-- Main Content -->
@@ -195,82 +122,18 @@
               {{ pagination.total_records.toLocaleString() }} results found
             </h2>
 
-            <!-- Controls Bar -->
-            <v-card flat class="mb-4 pa-4">
-              <v-row align="center" dense>
-                <v-col cols="auto">
-                  <v-select 
-                    v-model="pagination.page_size" 
-                    :items="[10, 25, 50, 100]" 
-                    label="Per Page" 
-                    density="compact"
-                    variant="outlined" 
-                    hide-details 
-                    style="width: 120px;"
-                    @update:model-value="handlePageSizeChange"
-                  />
-                </v-col>
-                
-                <v-col cols="auto">
-                  <v-select 
-                    v-model="state.sortBy" 
-                    :items="sortOptions" 
-                    item-title="title" 
-                    item-value="key"
-                    label="Sort By" 
-                    density="compact" 
-                    variant="outlined" 
-                    hide-details
-                    style="width: 180px;"
-                    @update:model-value="triggerSearch"
-                  />
-                </v-col>
-                
-                <v-col cols="auto">
-                  <v-btn-toggle 
-                    v-model="state.sortOrder" 
-                    mandatory 
-                    variant="outlined" 
-                    density="compact"
-                    @update:model-value="triggerSearch"
-                  >
-                    <v-btn value="asc" icon="mdi-arrow-up" title="Ascending" />
-                    <v-btn value="desc" icon="mdi-arrow-down" title="Descending" />
-                  </v-btn-toggle>
-                </v-col>
-                
-                <v-spacer />
-                
-                <v-col cols="auto">
-                  <div class="d-flex ga-2">
-                    <v-btn 
-                      variant="outlined" 
-                      prepend-icon="mdi-download"
-                      @click="downloadData('csv')" 
-                      :loading="state.isExporting.csv"
-                    >
-                      CSV
-                    </v-btn>
-                    <v-btn 
-                      variant="outlined" 
-                      prepend-icon="mdi-download"
-                      @click="downloadData('excel')" 
-                      :loading="state.isExporting.excel"
-                    >
-                      Excel
-                    </v-btn>
-                    <v-btn 
-                      variant="outlined" 
-                      prepend-icon="mdi-download"
-                      @click="downloadData('json')" 
-                      :loading="state.isExporting.excel"
-                    >
-                      Json
-                    </v-btn>
-                  </div>
-                </v-col>
-              </v-row>
-            </v-card>
+            <ControlsBar
+              v-model:page-size="pagination.page_size"
+              v-model:sort-by="state.sortBy"
+              v-model:sort-order="state.sortOrder"
+              :sort-options="sortOptions"
+              :export-loading="state.isExporting"
+              flat
+              @update:page-size="handlePageSizeChange"
+              @update:sort-by="triggerSearch"
+              @update:sort-order="triggerSearch"
+              @export="downloadData"
+            />
 
             <!-- Loading State -->
             <div v-if="state.isLoading" class="text-center py-16">
@@ -280,176 +143,13 @@
 
             <!-- Results List -->
             <div v-else class="d-flex flex-column ga-4">
-              <!-- <v-card 
-                v-for="item in searchResults" 
-                :key="item.primary_id" 
-                variant="outlined" 
-                hover
-              >
-                <v-card-text class="pa-6">
-                  <div class="mb-3">
-                    <p class="text-body-2 text-medium-emphasis mb-2">
-                      {{ item.year }} · {{ item.authors }}
-                      <span v-if="item.country"> · {{ item.country }}</span>
-                    </p>
-                    <a 
-                      href="#" 
-                      @click.prevent="navigateToDetails(item.primary_id)"
-                      class="text-h6 font-weight-bold text-primary result-title"
-                    >
-                      {{ item.title }}
-                    </a>
-                  </div>
-
-                  <v-divider class="my-4" />
-
-                  <v-row dense>
-                    <v-col cols="12" sm="4">
-                      <div class="text-caption text-medium-emphasis">Studies</div>
-                      <div class="font-weight-medium">{{ item.num_of_studies || 'N/A' }}</div>
-                    </v-col>
-                    <v-col cols="12" sm="4">
-                      <div class="text-caption text-medium-emphasis">Last Search</div>
-                      <div class="font-weight-medium">{{ item.date_of_literature_search || 'N/A' }}</div>
-                    </v-col>
-                    <v-col cols="12" sm="4">
-                      <div class="text-caption text-medium-emphasis">Publication</div>
-                      <div class="font-weight-medium">{{ item.publication_date || 'N/A' }}</div>
-                    </v-col>
-                  </v-row>
-
-                  <div v-if="item.publication_type" class="mt-3">
-                    <v-chip size="small" color="primary" variant="tonal">
-                      {{ item.publication_type }}
-                    </v-chip>
-                  </div>
-                </v-card-text>
-              </v-card> -->
               
-              <v-card 
+              <ResultCard
                 v-for="item in searchResults"
-                :key="item.primary_id" 
-                variant="outlined" 
-                hover
-                class="result-card"
-              >
-                <v-card-text class="pa-6">
-                  <!-- Header Info -->
-                  <div class="mb-4">
-                    <div class="d-flex align-center flex-wrap ga-2 mb-2">
-                      <v-chip 
-                        v-if="item.year" 
-                        size="small" 
-                        variant="tonal"
-                      >
-                        {{ item.year }}
-                      </v-chip>
-                      <v-chip 
-                        v-if="item.overallConf && item.overallConf !== 'N/A'"
-                        :color="getConfidenceColor(item.overallConf)" 
-                        size="small" 
-                        variant="tonal"
-                      >
-                        {{ item.overallConf }}
-                      </v-chip>
-                      <v-chip
-                        v-if="item.openAccess && item.openAccess !== 'N/A' && item.openAccess =='open access'"
-                        color="success"
-                        size="small"
-                        variant="tonal"
-                      >
-                        Open Access
-                      </v-chip>
-                      <v-chip
-                        v-else
-                        color="danger"
-                        size="small"
-                        variant="tonal"
-                      >
-                        Not Open Access
-                      </v-chip>
-                    </div>
-                    
-                    <!-- Title -->
-                    <a 
-                      href="#"
-                      @click.prevent="navigateToDetails(item.primary_id)"
-                      class="text-h6 font-weight-bold result-title d-block mb-2"
-                    >
-                      {{ item.title }}
-                    </a>
-                    
-                    <!-- Authors -->
-                    <p class="text-body-2 text-medium-emphasis mb-0">
-                      {{ formatAuthors(item.authors) }}
-                      <!-- <span v-if="item.country"> · {{ item.country }}</span> -->
-                    </p>
-                  </div>
-
-                  <!-- Abstract -->
-                  <div v-if="item.abstract" class="mb-4">
-                    <p class="text-body-2">
-                      {{ item.isAbstractExpanded ? item.abstract : truncateText(item.abstract, 300) }}
-                      <a
-                        v-if="item.abstract.length > 300"
-                        href="#"
-                        class="read-more-link ms-1"
-                        @click.prevent="item.isAbstractExpanded = !item.isAbstractExpanded"
-                      >
-                        {{ item.isAbstractExpanded ? 'Show Less' : 'Show More' }}
-                      </a>
-                    </p>
-                  </div>
-
-                  <v-divider class="my-4" />
-
-                  <!-- Metadata Grid -->
-                  <v-row dense class="mb-4">
-                    <v-col cols="6" sm="3">
-                      <div class="text-caption text-medium-emphasis">Studies</div>
-                      <div class="font-weight-bold">{{ item.num_of_studies || 'N/A' }}</div>
-                    </v-col>
-                    <v-col cols="6" sm="3">
-                      <div class="text-caption text-medium-emphasis">Last Search</div>
-                      <div class="font-weight-bold">{{ item.date_of_literature_search || 'N/A' }}</div>
-                    </v-col>
-                    <v-col cols="6" sm="3">
-                      <div class="text-caption text-medium-emphasis">Published</div>
-                      <div class="font-weight-bold">{{ item.year || 'N/A' }}</div>
-                    </v-col>
-                    <v-col cols="6" sm="3">
-                      <div class="text-caption text-medium-emphasis">Type</div>
-                      <div class="font-weight-bold">{{ item.publication_type || 'N/A' }}</div>
-                    </v-col>
-                  </v-row>
-
-                  <!-- Tags Section -->
-                  <div v-if="(item.research_notes && item.research_notes.length > 0) || (item.notes && item.notes.length > 0)" class="mb-4">
-                    <v-chip-group>
-                      <v-chip v-for="note in item.research_notes" :key="`rn-${note}`" size="small" color="blue-grey-lighten-4">
-                        {{ note }}
-                      </v-chip>
-                      <v-chip v-for="note in item.notes" :key="`n-${note}`" size="small" variant="outlined">
-                        {{ note }}
-                      </v-chip>
-                    </v-chip-group>
-                  </div>
-
-                  <!-- Action Button -->
-                  <v-btn 
-                    variant="tonal" 
-                    color="primary" 
-                    size="small"
-                    :href="item.link" 
-                    target="_blank"
-                    prepend-icon="mdi-open-in-new"
-                  >
-                    View Article
-                  </v-btn>
-                </v-card-text>
-              </v-card>
-
-
+                :key="item.primary_id"
+                :item="item"
+                @title-click="navigateToDetails"
+              />
 
               <!-- No Results -->
               <div v-if="searchResults.length === 0" class="text-center py-12">
@@ -487,6 +187,9 @@ import { ref, reactive, computed, onMounted, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { mapper } from '@/services/index.js';
+import SearchBar from '@/components/SearchBar.vue';
+import ResultCard from '@/components/ResultCard.vue';
+import ControlsBar from '@/components/ControlsBar.vue';
 
 // Components
 const AdvancedFilterDialog = defineAsyncComponent(() => 
@@ -633,6 +336,16 @@ const sortOptions = [
   { title: 'Title', key: 'title' },
   { title: 'Authors', key: 'authors' }
 ];
+
+
+
+const cleanSearchInput = (event) => {
+  // Remove special characters, keep letters, numbers, spaces, and basic punctuation
+  state.searchQuery = state.searchQuery
+    .replace(/[^\w\s\-.,;:'"()]/g, '')  // Keep alphanumeric, spaces, and common punctuation
+    .replace(/\s+/g, ' ')                // Replace multiple spaces with single space
+    .trim();                             // Remove leading/trailing whitespace
+};
 
 // Computed Properties
 // const selectedFilters = computed(() => {
@@ -817,10 +530,82 @@ const selectedFilters = computed(() => {
 
 
 
+// const apiPayload = computed(() => {
+//   const conditions: any[] = [];
+  
+//   // Handle multi-field search with OR logic
+//   if (state.searchQuery) {
+//     if (state.searchField === 'all') {
+//       conditions.push({
+//         logic: 'OR',
+//         conditions: [
+//           { field: 'title', operator: 'contains', value: state.searchQuery },
+//           { field: 'authors', operator: 'contains', value: state.searchQuery },
+//           { field: 'abstract', operator: 'contains', value: state.searchQuery },
+//           // { field: 'topic_notes', operator: 'contains', value: state.searchQuery },
+//           // { field: 'research_notes', operator: 'contains', value: state.searchQuery },
+//           // { field: 'journal', operator: 'contains', value: state.searchQuery }
+//         ]
+//       });
+//     } else {
+//       conditions.push({
+//         field: state.searchField,
+//         operator: 'contains',
+//         value: state.searchQuery
+//       });
+//     }
+//   }
+  
+//   // Add sidebar selections with OR within groups
+//   sidebarFilterGroups.value.forEach(group => {
+//     const selectedOptions = group.options
+//       .filter(opt => opt.selected && !opt.isHeader);
+    
+//     if (selectedOptions.length > 0) {
+//       const column = selectedOptions[0].column || group.title.toLowerCase();
+      
+//       if (selectedOptions.length === 1) {
+//         conditions.push({
+//           field: column,
+//           operator: 'equals',
+//           value: selectedOptions[0].code || selectedOptions[0].label
+//         });
+//       } else {
+//         conditions.push({
+//           logic: 'OR',
+//           conditions: selectedOptions.map(opt => ({
+//             field: opt.column || column,
+//             operator: 'equals',
+//             value: opt.code || opt.label
+//           }))
+//         });
+//       }
+//     }
+//   });
+  
+//   // Add advanced conditions
+//   conditions.push(...advancedFilterConditions.value);
+  
+//   return {
+//     table_name: 'all_db',
+//     search: {
+//       conditions: conditions,
+//       logic: 'AND'
+//     },
+//     sort_by: state.sortBy,
+//     sort_direction: state.sortOrder,
+//     pagination: {                    // ← Use 'pagination' object
+//       page: pagination.current_page,
+//       page_size: pagination.page_size  // ← Keep as page_size (your backend reads this)
+//     }
+//   };
+// });
+
+
 const apiPayload = computed(() => {
   const conditions: any[] = [];
   
-  // Handle multi-field search with OR logic
+  // Handle multi-field search
   if (state.searchQuery) {
     if (state.searchField === 'all') {
       conditions.push({
@@ -829,9 +614,9 @@ const apiPayload = computed(() => {
           { field: 'title', operator: 'contains', value: state.searchQuery },
           { field: 'authors', operator: 'contains', value: state.searchQuery },
           { field: 'abstract', operator: 'contains', value: state.searchQuery },
-          // { field: 'topic_notes', operator: 'contains', value: state.searchQuery },
-          // { field: 'research_notes', operator: 'contains', value: state.searchQuery },
-          // { field: 'journal', operator: 'contains', value: state.searchQuery }
+          { field: 'topic_notes', operator: 'contains', value: state.searchQuery },
+          { field: 'research_notes', operator: 'contains', value: state.searchQuery },
+          { field: 'journal', operator: 'contains', value: state.searchQuery },
         ]
       });
     } else {
@@ -843,34 +628,68 @@ const apiPayload = computed(() => {
     }
   }
   
-  // Add sidebar selections with OR within groups
+  // ✅ FIXED: Group all selections from same category into single OR group
   sidebarFilterGroups.value.forEach(group => {
     const selectedOptions = group.options
       .filter(opt => opt.selected && !opt.isHeader);
     
-    if (selectedOptions.length > 0) {
-      const column = selectedOptions[0].column || group.title.toLowerCase();
+    if (selectedOptions.length === 0) return;
+    
+    const isHashField = ['Topics', 'Interventions', 'Vaccine Options', 'Outcomes', 'Population'].includes(group.title);
+    
+    if (isHashField) {
+      // ✅ Hash fields: Create conditions for all selections in this group
+      const allConditionsForGroup = [];
       
-      if (selectedOptions.length === 1) {
-        conditions.push({
-          field: column,
-          operator: 'equals',
-          value: selectedOptions[0].code || selectedOptions[0].label
+      selectedOptions.forEach(opt => {
+        const field = opt.field || opt.column;
+        if (!field) return;
+        
+        allConditionsForGroup.push({
+          field: field,
+          operator: 'contains_any',
+          values: [opt.code || opt.label]
         });
-      } else {
+      });
+      
+      // ✅ If multiple selections in this group, wrap in OR
+      if (allConditionsForGroup.length > 1) {
         conditions.push({
           logic: 'OR',
-          conditions: selectedOptions.map(opt => ({
-            field: opt.column || column,
-            operator: 'equals',
-            value: opt.code || opt.label
-          }))
+          conditions: allConditionsForGroup
         });
+      } else if (allConditionsForGroup.length === 1) {
+        conditions.push(allConditionsForGroup[0]);
+      }
+    } else {
+      // ✅ Standard fields (Country, Year, AMSTAR)
+      const fieldMap: Record<string, string> = {
+        'Country': 'country',
+        'Year': 'year',
+        'AMSTAR 2 Rating': 'amstar_label'
+      };
+      
+      const field = fieldMap[group.title] || selectedOptions[0].column || group.title.toLowerCase();
+      
+      // ✅ Create conditions for all selections
+      const allConditionsForGroup = selectedOptions.map(opt => ({
+        field: field,
+        operator: 'in',
+        values: [opt.code || opt.label]
+      }));
+      
+      // ✅ If multiple selections, wrap in OR
+      if (allConditionsForGroup.length > 1) {
+        conditions.push({
+          logic: 'OR',
+          conditions: allConditionsForGroup
+        });
+      } else if (allConditionsForGroup.length === 1) {
+        conditions.push(allConditionsForGroup[0]);
       }
     }
   });
   
-  // Add advanced conditions
   conditions.push(...advancedFilterConditions.value);
   
   return {
@@ -881,9 +700,9 @@ const apiPayload = computed(() => {
     },
     sort_by: state.sortBy,
     sort_direction: state.sortOrder,
-    pagination: {                    // ← Use 'pagination' object
+    pagination: {
       page: pagination.current_page,
-      page_size: pagination.page_size  // ← Keep as page_size (your backend reads this)
+      page_size: pagination.page_size
     }
   };
 });
@@ -926,7 +745,13 @@ const loadFilters = async () => {
 };
 
 
-const formatFieldName = (fieldName: string): string => {
+const formatFieldName = (fieldName: string | undefined | null): string => {
+  // ✅ Add safety check at the start
+  if (!fieldName || typeof fieldName !== 'string') {
+    console.warn('⚠️  formatFieldName received invalid input:', fieldName);
+    return '';
+  }
+  
   // Handle hash paths - extract last segment
   if (fieldName.includes('__hash__')) {
     const parts = fieldName.split('__');
@@ -972,6 +797,54 @@ const formatFieldName = (fieldName: string): string => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
+
+
+// const formatFieldName = (fieldName: string): string => {
+//   // Handle hash paths - extract last segment
+//   if (fieldName.includes('__hash__')) {
+//     const parts = fieldName.split('__');
+//     fieldName = parts[parts.length - 1];
+//   }
+  
+//   // Handle topic_ prefix
+//   if (fieldName.startsWith('topic_')) {
+//     return 'Topic';
+//   }
+  
+//   // Handle intervention_ prefix
+//   if (fieldName.startsWith('intervention_')) {
+//     return 'Intervention';
+//   }
+  
+//   // Handle outcome_ prefix
+//   if (fieldName.startsWith('outcome_')) {
+//     return 'Outcome';
+//   }
+  
+//   // Handle popu_ prefix
+//   if (fieldName.startsWith('popu_')) {
+//     return 'Population';
+//   }
+  
+//   // Special cases
+//   const specialCases: Record<string, string> = {
+//     'amstar_label': 'AMSTAR Rating',
+//     'region': 'Region',
+//     'country': 'Country',
+//     'year': 'Year',
+//     'language': 'Language'
+//   };
+  
+//   if (specialCases[fieldName]) {
+//     return specialCases[fieldName];
+//   }
+  
+//   // Default: capitalize and replace underscores
+//   return fieldName
+//     .split('_')
+//     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+//     .join(' ');
+// };
 
 
 const HIDDEN_SIDEBAR_FILTERS = ['Region', 'Language', 'Population']; // Add any filters you want to hide
@@ -1295,9 +1168,21 @@ const handlePageSizeChange = () => {
   performSearch();
 };
 
-const navigateToDetails = (id: number) => {
-  router.push({ name: 'record_details_page', params: { id } });
+
+const navigateToDetails = (item) => {
+  // Navigate using item object
+  router.push({
+    name: 'record_details_page',  // Route name
+    params: { id: item.primary_id }
+  });
+  
+  // Or using path
+  // router.push(`/articles/${item.primary_id}`);
 };
+
+// const navigateToDetails = (id: number) => {
+//   router.push({ name: 'record_details_page', params: { id } });
+// };
 
 const formatAuthors = (authors: string): string => {
   if (!authors) return 'N/A';

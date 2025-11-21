@@ -931,50 +931,196 @@ const closeDialog = () => {
 // SUBMIT FILTERS - WITH SYNONYMS SUPPORT
 // ==========================================
 
+
+
+
+
+// const submitFilters = async () => {
+//   state.isApplying = true;
+  
+//   try {
+//     const conditions = [];
+    
+//     // ✅ FIXED: Tag filters with tag codes (not synonyms)
+//     Object.entries(state.selectedTags).forEach(([cat, groups]) => {
+//       const categoryConditions = [];
+      
+//       Object.entries(groups).forEach(([group, items]) => {
+//         Object.entries(items).forEach(([item, val]) => {
+//           const column = val.column || state.filters.tag_filters[cat]?.column;
+          
+//           if (column) {
+//             // ✅ Use tag code (item key), not display name
+//             categoryConditions.push({
+//               field: column,
+//               operator: 'contains_any',  // ✅ Use contains_any for hash fields
+//               values: [item]  // ✅ Use tag code (e.g., "eff", "saf")
+//             });
+//           }
+//         });
+//       });
+      
+//       // ✅ Wrap multiple selections from same category in OR
+//       if (categoryConditions.length > 1) {
+//         conditions.push({
+//           logic: 'OR',
+//           conditions: categoryConditions
+//         });
+//       } else if (categoryConditions.length === 1) {
+//         conditions.push(categoryConditions[0]);
+//       }
+//     });
+    
+//     // ✅ Other filters (Country, AMSTAR, etc.)
+//     Object.entries(state.selectedOthers).forEach(([cat, vals]) => {
+//       const column = state.filters.others[cat]?.column;
+//       if (column && vals.length > 0) {
+//         if (vals.length === 1) {
+//           conditions.push({
+//             field: column,
+//             operator: 'in',
+//             values: vals
+//           });
+//         } else {
+//           // ✅ Multiple selections: wrap in OR
+//           conditions.push({
+//             logic: 'OR',
+//             conditions: vals.map(val => ({
+//               field: column,
+//               operator: 'in',
+//               values: [val]
+//             }))
+//           });
+//         }
+//       }
+//     });
+    
+//     // ✅ Year range
+//     const yearCard = cards.value.find(c => c.type === 'year');
+//     if (yearCard && (state.yearRange[0] !== yearCard.min || state.yearRange[1] !== yearCard.max)) {
+//       conditions.push({
+//         field: yearCard.column || 'year',
+//         operator: 'between',
+//         value: state.yearRange
+//       });
+//     }
+    
+//     // ✅ Additional fields
+//     state.additionalFields.forEach(f => {
+//       if (f.column && f.value) {
+//         conditions.push({
+//           field: f.column,
+//           operator: f.operator,
+//           value: f.value
+//         });
+//       }
+//     });
+    
+//     const payload = {
+//       table_name: props.tableName,
+//       search: { 
+//         conditions, 
+//         logic: 'AND'  // AND between different filter categories
+//       },
+//       sort_by: state.orderBy.column,
+//       sort_direction: state.orderBy.direction,
+//       pagination: {
+//         page: 1,
+//         page_size: 20
+//       }
+//     };
+    
+//     console.log('✅ Submitting filters:', JSON.stringify(payload, null, 2));
+    
+//     emit('apply-filters', payload);
+//     closeDialog();
+    
+//   } catch (e) {
+//     console.error('❌ Submit error:', e);
+//     state.error = 'Failed to apply filters';
+//   } finally {
+//     state.isApplying = false;
+//   }
+// };
+
+
+
 const submitFilters = async () => {
   state.isApplying = true;
   
   try {
     const conditions = [];
     
-    // ✨ Tag filters with SYNONYMS for popu, intervention, outcome, topic
+    // ✅ FIXED: Tag filters with proper tag code extraction
     Object.entries(state.selectedTags).forEach(([cat, groups]) => {
+      const categoryConditions = [];
+      
       Object.entries(groups).forEach(([group, items]) => {
         Object.entries(items).forEach(([item, val]) => {
           const column = val.column || state.filters.tag_filters[cat]?.column;
           
-          if (column && val.synonyms && val.synonyms.length > 0) {
-            // ✨ Use ALL synonyms in IN operator
-            conditions.push({
-              field: column,
-              operator: 'in',
-              values: val.synonyms
-            });
-          } else if (column) {
-            // Fallback if no synonyms
-            conditions.push({
-              field: column,
-              operator: 'equals',
-              value: val.display || item
-            });
+          if (!column) return;
+          
+          // ✅ Extract tag code from item key
+          // For population: "nb_0__1" → "nb", "ado_10__17" → "ado"
+          // For others: "saf" → "saf", "eff" → "eff"
+          let tagCode = item;
+          
+          // If item contains underscores followed by numbers, extract prefix
+          if (/_\d+/.test(item)) {
+            // Match pattern like "nb_0__1", "ado_10__17", "adu_18__64"
+            const match = item.match(/^([a-z]+)_/);
+            if (match) {
+              tagCode = match[1];  // Extract "nb", "ado", "adu", etc.
+            }
           }
+          
+          console.log(`✅ Category: ${cat}, Item: ${item}, Tag Code: ${tagCode}, Field: ${column}`);
+          
+          categoryConditions.push({
+            field: column,
+            operator: 'contains_any',
+            values: [tagCode]  // ✅ Use extracted tag code
+          });
         });
       });
-    });
-    
-    // Other filters (non-tag)
-    Object.entries(state.selectedOthers).forEach(([cat, vals]) => {
-      const column = state.filters.others[cat]?.column;
-      if (column && vals.length > 0) {
+      
+      // ✅ Wrap multiple selections from same category in OR
+      if (categoryConditions.length > 1) {
         conditions.push({
-          field: column,
-          operator: 'in',
-          values: vals
+          logic: 'OR',
+          conditions: categoryConditions
         });
+      } else if (categoryConditions.length === 1) {
+        conditions.push(categoryConditions[0]);
       }
     });
     
-    // Year range
+    // ✅ Other filters (Country, AMSTAR, etc.)
+    Object.entries(state.selectedOthers).forEach(([cat, vals]) => {
+      const column = state.filters.others[cat]?.column;
+      if (column && vals.length > 0) {
+        if (vals.length === 1) {
+          conditions.push({
+            field: column,
+            operator: 'in',
+            values: vals
+          });
+        } else {
+          // ✅ Multiple selections: wrap in OR
+          conditions.push({
+            logic: 'OR',
+            conditions: vals.map(val => ({
+              field: column,
+              operator: 'in',
+              values: [val]
+            }))
+          });
+        }
+      }
+    });
+    
+    // ✅ Year range
     const yearCard = cards.value.find(c => c.type === 'year');
     if (yearCard && (state.yearRange[0] !== yearCard.min || state.yearRange[1] !== yearCard.max)) {
       conditions.push({
@@ -984,7 +1130,7 @@ const submitFilters = async () => {
       });
     }
     
-    // Additional fields
+    // ✅ Additional fields
     state.additionalFields.forEach(f => {
       if (f.column && f.value) {
         conditions.push({
@@ -996,14 +1142,20 @@ const submitFilters = async () => {
     });
     
     const payload = {
-      search: { conditions, logic: 'AND' },
+      table_name: props.tableName,
+      search: { 
+        conditions, 
+        logic: 'AND'
+      },
       sort_by: state.orderBy.column,
       sort_direction: state.orderBy.direction,
-      page: 1,
-      per_page: 20
+      pagination: {
+        page: 1,
+        page_size: 20
+      }
     };
     
-    console.log('✅ Submitting filters with synonyms:', payload);
+    console.log('✅ Submitting filters:', JSON.stringify(payload, null, 2));
     
     emit('apply-filters', payload);
     closeDialog();
@@ -1015,6 +1167,93 @@ const submitFilters = async () => {
     state.isApplying = false;
   }
 };
+
+
+
+// const submitFilters = async () => {
+//   state.isApplying = true;
+  
+//   try {
+//     const conditions = [];
+    
+//     // ✨ Tag filters with SYNONYMS for popu, intervention, outcome, topic
+//     Object.entries(state.selectedTags).forEach(([cat, groups]) => {
+//       Object.entries(groups).forEach(([group, items]) => {
+//         Object.entries(items).forEach(([item, val]) => {
+//           const column = val.column || state.filters.tag_filters[cat]?.column;
+          
+//           if (column && val.synonyms && val.synonyms.length > 0) {
+//             // ✨ Use ALL synonyms in IN operator
+//             conditions.push({
+//               field: column,
+//               operator: 'in',
+//               values: val.synonyms
+//             });
+//           } else if (column) {
+//             // Fallback if no synonyms
+//             conditions.push({
+//               field: column,
+//               operator: 'equals',
+//               value: val.display || item
+//             });
+//           }
+//         });
+//       });
+//     });
+    
+//     // Other filters (non-tag)
+//     Object.entries(state.selectedOthers).forEach(([cat, vals]) => {
+//       const column = state.filters.others[cat]?.column;
+//       if (column && vals.length > 0) {
+//         conditions.push({
+//           field: column,
+//           operator: 'in',
+//           values: vals
+//         });
+//       }
+//     });
+    
+//     // Year range
+//     const yearCard = cards.value.find(c => c.type === 'year');
+//     if (yearCard && (state.yearRange[0] !== yearCard.min || state.yearRange[1] !== yearCard.max)) {
+//       conditions.push({
+//         field: yearCard.column || 'year',
+//         operator: 'between',
+//         value: state.yearRange
+//       });
+//     }
+    
+//     // Additional fields
+//     state.additionalFields.forEach(f => {
+//       if (f.column && f.value) {
+//         conditions.push({
+//           field: f.column,
+//           operator: f.operator,
+//           value: f.value
+//         });
+//       }
+//     });
+    
+//     const payload = {
+//       search: { conditions, logic: 'AND' },
+//       sort_by: state.orderBy.column,
+//       sort_direction: state.orderBy.direction,
+//       page: 1,
+//       per_page: 20
+//     };
+    
+//     console.log('✅ Submitting filters with synonyms:', payload);
+    
+//     emit('apply-filters', payload);
+//     closeDialog();
+    
+//   } catch (e) {
+//     console.error('❌ Submit error:', e);
+//     state.error = 'Failed to apply filters';
+//   } finally {
+//     state.isApplying = false;
+//   }
+// };
 
 // ==========================================
 // LIFECYCLE

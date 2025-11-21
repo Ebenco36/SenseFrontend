@@ -1,89 +1,15 @@
 <template>
   <v-app>
-    <!-- App Bar -->
-    <v-app-bar flat color="#153a9d" height="120">
-      <v-container class="h-100 d-flex align-center ga-4">
-        <h1 class="text-h4 font-weight-bold text-white me-4 d-none d-md-block">
-          Resources
-        </h1>
-        
-        <!-- Search Bar with Field Selector -->
-        <div class="d-flex flex-grow-1 align-center">
-          <div class="d-flex flex-grow-1">
-            <!-- Search Field Selector -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="flat"
-                  color="white"
-                  height="48"
-                  class="search-field-selector"
-                  append-icon="mdi-chevron-down"
-                >
-                  {{ selectedSearchFieldLabel }}
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="field in searchFields"
-                  :key="field.value"
-                  :value="field.value"
-                  @click="state.searchField = field.value"
-                >
-                  <v-list-item-title>
-                    <v-icon :icon="field.icon" size="small" class="me-2" />
-                    {{ field.label }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-            
-            <!-- Search Input -->
-            <v-text-field 
-              v-model="state.searchQuery" 
-              variant="solo" 
-              label="Search..."
-              :placeholder="searchPlaceholder"
-              density="comfortable" 
-              hide-details 
-              rounded="0" 
-              flat 
-              class="search-input"
-              @keydown.enter="performSearch"
-            />
-            
-            <!-- Search Button -->
-            <v-btn 
-              height="48" 
-              color="#D95D45" 
-              variant="flat" 
-              class="find-btn font-weight-bold text-white"
-              @click="performSearch" 
-              :loading="state.isLoading"
-            >
-              Find
-            </v-btn>
-          </div>
-          
-          <!-- Advanced Filter Button -->
-          <v-tooltip location="bottom">
-            <template #activator="{ props }">
-              <v-btn 
-                v-bind="props" 
-                size="large" 
-                icon="mdi-filter-variant" 
-                variant="text" 
-                color="white"
-                class="ms-2" 
-                @click="state.showAdvancedFilters = true"
-              />
-            </template>
-            <span>Advanced Filtering</span>
-          </v-tooltip>
-        </div>
-      </v-container>
-    </v-app-bar>
+    <SearchBar
+      v-model="state.searchQuery"
+      v-model:search-field="state.searchField"
+      title="Resources"
+      :search-fields="searchFields"
+      :loading="state.isLoading"
+      :placeholder="searchPlaceholder"
+      @search="performSearch"
+      @advanced-filter="state.showAdvancedFilters = true"
+    />
 
     <!-- Main Content -->
     <v-main>
@@ -100,139 +26,25 @@
           </v-col>
         </v-row>
 
-        <!-- Active Filters Display -->
-        <!-- <v-card v-if="activeFilters.length > 0" variant="outlined" class="mb-4">
-          <v-card-text class="d-flex align-center flex-wrap ga-2">
-            <span class="text-body-2 font-weight-bold me-2">Active Filters:</span>
-            <v-chip 
-              v-for="(filter, idx) in activeFilters"
-              :key="idx"
-              size="small" 
-              closable 
-              color="primary"
-              variant="flat"
-              @click:close="removeFilter(filter)"
-            >
-              {{ filter.label }}
-            </v-chip>
-            <v-spacer />
-            <v-btn 
-              size="small" 
-              variant="text" 
-              color="error"
-              @click="clearAllFilters"
-            >
-              Clear All
-            </v-btn>
-          </v-card-text>
-        </v-card> -->
-
-        <!-- Controls Bar -->
-        <v-card elevation="1" class="mb-4">
-          <v-card-text class="pa-4">
-            <v-row align="center" dense>
-              <!-- View Mode Toggle -->
-              <v-col cols="12" sm="auto">
-                <v-btn-toggle 
-                  v-model="state.viewMode" 
-                  mandatory 
-                  variant="outlined" 
-                  density="comfortable"
-                  color="primary"
-                >
-                  <v-btn value="list">
-                    <v-icon start>mdi-format-list-bulleted</v-icon>
-                    List
-                  </v-btn>
-                  <v-btn value="table">
-                    <v-icon start>mdi-table</v-icon>
-                    Table
-                  </v-btn>
-                </v-btn-toggle>
-              </v-col>
-              
-              <!-- Items Per Page (Table Only) -->
-              <v-col cols="12" sm="auto" v-if="state.viewMode === 'table'">
-                <v-select 
-                  v-model="pagination.page_size" 
-                  :items="[10, 25, 50, 100]" 
-                  label="Per Page" 
-                  density="compact"
-                  variant="outlined" 
-                  hide-details 
-                  style="min-width: 120px;"
-                  @update:model-value="performSearch"
-                />
-              </v-col>
-              
-              <!-- Sort By -->
-              <v-col cols="12" sm="auto">
-                <v-select 
-                  v-model="state.sortBy" 
-                  :items="sortOptions" 
-                  item-title="title" 
-                  item-value="key"
-                  label="Sort By" 
-                  density="compact" 
-                  variant="outlined" 
-                  hide-details
-                  style="min-width: 180px;"
-                  @update:model-value="performSearch"
-                />
-              </v-col>
-              
-              <!-- Sort Direction -->
-              <v-col cols="12" sm="auto">
-                <v-btn-toggle 
-                  v-model="state.sortOrder" 
-                  mandatory 
-                  variant="outlined" 
-                  density="compact"
-                  @update:model-value="performSearch"
-                >
-                  <v-btn value="asc">
-                    <v-icon>mdi-arrow-up</v-icon>
-                  </v-btn>
-                  <v-btn value="desc">
-                    <v-icon>mdi-arrow-down</v-icon>
-                  </v-btn>
-                </v-btn-toggle>
-              </v-col>
-              
-              <v-spacer />
-              
-              <!-- Export Buttons -->
-              <v-col cols="12" sm="auto">
-                <div class="d-flex ga-2">
-                  <v-btn 
-                    variant="tonal" 
-                    size="small"
-                    @click="downloadData('csv')" 
-                    :loading="state.isExporting.csv"
-                  >
-                    CSV
-                  </v-btn>
-                  <v-btn 
-                    variant="tonal" 
-                    size="small"
-                    @click="downloadData('excel')" 
-                    :loading="state.isExporting.excel"
-                  >
-                    Excel
-                  </v-btn>
-                  <v-btn 
-                    variant="tonal" 
-                    size="small"
-                    @click="downloadData('json')" 
-                    :loading="state.isExporting.json"
-                  >
-                    JSON
-                  </v-btn>
-                </div>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
+        <ControlsBar
+          v-model:view-mode="state.viewMode"
+          v-model:page-size="pagination.page_size"
+          v-model:sort-by="state.sortBy"
+          v-model:sort-order="state.sortOrder"
+          :sort-options="sortOptions"
+          :export-loading="state.isExporting"
+          :export-variant="'tonal'"
+          :export-size="'small'"
+          show-view-mode
+          :conditional-per-page="true"
+          :per-page-condition="state.viewMode === 'table'"
+          elevation="1"
+          @update:view-mode="performSearch"
+          @update:page-size="performSearch"
+          @update:sort-by="performSearch"
+          @update:sort-order="performSearch"
+          @export="downloadData"
+        />
 
         <!-- Loading State -->
         <div v-if="state.isLoading" class="text-center py-16">
@@ -244,130 +56,14 @@
         <div v-else>
           <!-- LIST VIEW -->
           <div v-if="state.viewMode === 'list'" class="d-flex flex-column ga-4">
-            <v-card 
-              v-for="item in searchResults"
-              :key="item.primary_id" 
-              variant="outlined" 
-              hover
-              class="result-card"
-            >
-              <v-card-text class="pa-6">
-                <!-- Header Info -->
-                <div class="mb-4">
-                  <div class="d-flex align-center flex-wrap ga-2 mb-2">
-                    <v-chip 
-                      v-if="item.year" 
-                      size="small" 
-                      variant="tonal"
-                    >
-                      {{ item.year }}
-                    </v-chip>
-                    <v-chip 
-                      v-if="item.overallConf && item.overallConf !== 'N/A'"
-                      :color="getConfidenceColor(item.overallConf)" 
-                      size="small" 
-                      variant="tonal"
-                    >
-                      {{ item.overallConf }}
-                    </v-chip>
-                     <!-- v-if="item.open_access && item.open_access !== 'N/A' && item.open_access.toLowerCase().includes('open access')" -->
-                    <v-chip
-                      v-if="item.open_access && item.open_access !== 'N/A' && item.open_access == 'open access'"
-                      color="success"
-                      size="small"
-                      variant="tonal"
-                    >
-                      Open Access
-                    </v-chip>
-
-                    <v-chip
-                      v-else
-                      color="danger"
-                      size="small"
-                      variant="tonal"
-                    >
-                      Not Open Access
-                    </v-chip>
-                  </div>
-                  
-                  <!-- Title -->
-                  <a 
-                    href="#"
-                    @click.prevent="navigateToDetails(item.primary_id)"
-                    class="text-h6 font-weight-bold result-title d-block mb-2"
-                  >
-                    {{ item.title }}
-                  </a>
-                  
-                  <!-- Authors -->
-                  <p class="text-body-2 text-medium-emphasis mb-0">
-                    {{ formatAuthors(item.authors) }}
-                    <!-- <span v-if="item.country"> · {{ item.country ? item.country || item.country != 'NULL' : '' }}</span> -->
-                  </p>
-                </div>
-
-                <!-- Abstract -->
-                <div v-if="item.abstract" class="mb-4">
-                  <p class="text-body-2">
-                    {{ item.isAbstractExpanded ? item.abstract : truncateText(item.abstract, 300) }}
-                    <a
-                      v-if="item.abstract.length > 300"
-                      href="#"
-                      class="read-more-link ms-1"
-                      @click.prevent="item.isAbstractExpanded = !item.isAbstractExpanded"
-                    >
-                      {{ item.isAbstractExpanded ? 'Show Less' : 'Show More' }}
-                    </a>
-                  </p>
-                </div>
-
-                <v-divider class="my-4" />
-
-                <!-- Metadata Grid -->
-                <v-row dense class="mb-4">
-                  <v-col cols="6" sm="3">
-                    <div class="text-caption text-medium-emphasis">Studies</div>
-                    <div class="font-weight-bold">{{ item.num_of_studies || 'N/A' }}</div>
-                  </v-col>
-                  <v-col cols="6" sm="3">
-                    <div class="text-caption text-medium-emphasis">Last Search</div>
-                    <div class="font-weight-bold">{{ item.date_of_literature_search || 'N/A' }}</div>
-                  </v-col>
-                  <v-col cols="6" sm="3">
-                    <div class="text-caption text-medium-emphasis">Published</div>
-                    <div class="font-weight-bold">{{ item.year || 'N/A' }}</div>
-                  </v-col>
-                  <v-col cols="6" sm="3">
-                    <div class="text-caption text-medium-emphasis">Type</div>
-                    <div class="font-weight-bold">{{ item.publication_type || 'N/A' }}</div>
-                  </v-col>
-                </v-row>
-
-                <!-- Tags Section -->
-                <div v-if="(item.research_notes && item.research_notes.length > 0) || (item.notes && item.notes.length > 0)" class="mb-4">
-                  <v-chip-group>
-                    <v-chip v-for="note in item.research_notes" :key="`rn-${note}`" size="small" color="blue-grey-lighten-4">
-                      {{ note }}
-                    </v-chip>
-                    <v-chip v-for="note in item.notes" :key="`n-${note}`" size="small" variant="outlined">
-                      {{ note }}
-                    </v-chip>
-                  </v-chip-group>
-                </div>
-
-                <!-- Action Button -->
-                <v-btn 
-                  variant="tonal" 
-                  color="primary" 
-                  size="small"
-                  :href="item.link" 
-                  target="_blank"
-                  prepend-icon="mdi-open-in-new"
-                >
-                  View Article
-                </v-btn>
-              </v-card-text>
-            </v-card>
+            
+            <ResultCard
+                v-for="item in searchResults"
+                :key="item.primary_id"
+                :item="item"
+                @title-click="navigateToDetails"
+            />
+            
 
             <!-- No Results Message -->
             <v-card v-if="searchResults.length === 0" variant="outlined" class="text-center py-12">
@@ -383,141 +79,16 @@
 
           <!-- TABLE VIEW -->
           <v-card v-else-if="state.viewMode === 'table'" variant="outlined">
-            <v-data-table
-              :headers="tableHeaders"
+            <DataTable
               :items="searchResults"
+              :headers="tableHeaders"
               :items-per-page="pagination.page_size"
-              hide-default-footer
-              item-value="primary_id"
               show-expand
-              class="elevation-0"
-            >
-              <!-- Expand Button -->
-              <template #item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
-                <v-btn 
-                  :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'" 
-                  size="small"
-                  variant="text" 
-                  @click="toggleExpand(internalItem)"
-                />
-              </template>
-
-              <!-- Title Column -->
-              <template #item.title="{ item }">
-                <a 
-                  href="#" 
-                  @click.prevent="navigateToDetails(item.primary_id)" 
-                  class="result-title"
-                  :title="item.title"
-                >
-                  {{ truncateText(item.title, 80) }}
-                </a>
-              </template>
-
-              <!-- Link Column -->
-              <template #item.link="{ item }">
-                <v-btn 
-                  size="small" 
-                  variant="text" 
-                  color="primary" 
-                  :href="item.link" 
-                  target="_blank"
-                  icon="mdi-open-in-new"
-                />
-              </template>
-
-              <!-- Quality Column -->
-              <template #item.overallConf="{ item }">
-                <v-chip 
-                  v-if="item.overallConf && item.overallConf !== 'N/A'"
-                  :color="getConfidenceColor(item.overallConf)" 
-                  size="small" 
-                  variant="tonal"
-                >
-                  {{ item.overallConf }}
-                </v-chip>
-                <span v-else class="text-medium-emphasis">N/A</span>
-              </template>
-
-              <!-- Expanded Row -->
-              <template #expanded-row="{ columns, item }">
-                <tr>
-                  <td :colspan="columns.length" class="pa-0">
-                    <v-card flat class="ma-4">
-                      <v-card-text>
-                        <h4 class="text-subtitle-1 font-weight-bold mb-3">Abstract</h4>
-                        <p class="text-body-2 mb-3">
-                          {{ item.isAbstractExpanded ? item.abstract : truncateText(item.abstract, 400) }}
-                        </p>
-                        <a
-                          v-if="(item.abstract || '').length > 400"
-                          href="#"
-                          class="read-more-link text-body-2"
-                          @click.prevent="item.isAbstractExpanded = !item.isAbstractExpanded"
-                        >
-                          {{ item.isAbstractExpanded ? 'Show Less' : 'Show More' }}
-                        </a>
-                        
-                        <v-divider class="my-4" />
-                        
-                        <v-row>
-                          <v-col cols="12" md="6">
-                            <div class="mb-3">
-                              <span class="text-caption text-medium-emphasis">Diseases:</span>
-                              <v-chip-group class="mt-1">
-                                <v-chip v-for="note in item.research_notes" :key="note" size="small">
-                                  {{ note }}
-                                </v-chip>
-                              </v-chip-group>
-                            </div>
-                            <div>
-                              <span class="text-caption text-medium-emphasis">Open Access:</span>
-                              <!-- && item.open_access == 'open access' -->
-                              <v-chip
-                                v-if="item.open_access && item.open_access !== 'N/A' && item.open_access == 'open access'"
-                                color="success"
-                                size="small"
-                                variant="tonal"
-                                class="ms-2"
-                              >
-                                Open Access
-                              </v-chip>
-                              <v-chip
-                                v-else
-                                color="danger"
-                                size="small"
-                                variant="tonal"
-                                class="ms-2"
-                              >
-                                Not Open Access
-                              </v-chip>
-                            </div>
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <div class="mb-2">
-                              <span class="text-caption text-medium-emphasis">Studies Included:</span>
-                              <span class="ms-2 font-weight-medium">{{ item.num_of_studies }}</span>
-                            </div>
-                            <div>
-                              <span class="text-caption text-medium-emphasis">Country Focus:</span>
-                              <span class="ms-2 font-weight-medium">{{ item.location_in_title || 'N/A' }}</span>
-                            </div>
-                          </v-col>
-                        </v-row>
-                      </v-card-text>
-                    </v-card>
-                  </td>
-                </tr>
-              </template>
-
-              <!-- No Data -->
-              <template #no-data>
-                <div class="text-center py-8">
-                  <v-icon icon="mdi-database-search" size="48" color="grey-lighten-1" class="mb-2" />
-                  <p class="text-body-1">No results found</p>
-                </div>
-              </template>
-            </v-data-table>
+              expanded-title="Abstract"
+              expanded-text-field="abstract"
+              :expanded-fields="expandedFields"
+              @title-click="navigateToDetails"
+            />
           </v-card>
         </div>
 
@@ -545,6 +116,10 @@
 import { ref, reactive, computed, onMounted, defineAsyncComponent } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import SearchBar from '@/components/SearchBar.vue';
+import ResultCard from '@/components/ResultCard.vue';
+import ControlsBar from '@/components/ControlsBar.vue';
+import DataTable from '@/components/DataTable.vue';
 
 // Import components
 const AdvancedFilterDialog = defineAsyncComponent(() => 
@@ -569,7 +144,7 @@ interface SearchResult {
   link: string;
   abstract: string;
   overallConf: string;
-  open_access: string;
+  openAccess: string;
   location_in_title: string;
   isAbstractExpanded?: boolean;
 }
@@ -637,6 +212,43 @@ const searchFields: SearchField[] = [
   }
 ];
 
+
+const expandedFields = [
+  {
+    key: 'research_notes',
+    label: 'Diseases',
+    type: 'chips',
+    cols: 12,
+    md: 6
+  },
+  {
+    key: 'open_access',
+    label: 'Open Access',
+    type: 'chip',
+    cols: 12,
+    md: 6,
+    chipCondition: (val) => val === 'open access',
+    chipColorTrue: 'success',
+    chipColorFalse: 'error',
+    chipLabelTrue: 'Open Access',
+    chipLabelFalse: 'Not Open Access'
+  },
+  {
+    key: 'num_of_studies',
+    label: 'Studies Included',
+    cols: 12,
+    md: 6
+  },
+  {
+    key: 'location_in_title',
+    label: 'Country Focus',
+    cols: 12,
+    md: 6,
+    naText: 'N/A'
+  }
+];
+
+
 // State
 const state = reactive({
   searchQuery: '',
@@ -673,11 +285,12 @@ const sortOptions = [
 
 const tableHeaders = [
   { title: '', key: 'data-table-expand', sortable: false, width: '50px' },
-  { title: 'Title', key: 'title', sortable: true, width: '40%' },
+  { title: 'Title', key: 'title', sortable: true,  type: 'title', truncate: 80},
   { title: 'Authors', key: 'authors', sortable: false },
   { title: 'Year', key: 'year', sortable: true, width: '100px' },
-  { title: 'Quality', key: 'overallConf', sortable: true, width: '120px' },
-  { title: 'Link', key: 'link', sortable: false, width: '80px' }
+  { title: 'Quality', key: 'overallConf', sortable: true, width: '120px', type: 'chip' },
+  // { title: 'Link', key: 'link', sortable: false, width: '80px' },
+  { title: 'Link', key: 'link', type: 'link', sortable: false }
 ];
 
 // Helper Functions
@@ -832,7 +445,7 @@ const performSearch = async () => {
         research_notes: Array.isArray(record.research_notes) ? record.research_notes : [],
         location_in_title: record.location_in_title || '',
         overallConf: record.amstar_label || 'N/A',
-        open_access: record.open_access || 'N/A',
+        openAccess: record.open_access || 'N/A',
         isAbstractExpanded: false,
       }));
       
@@ -902,8 +515,19 @@ const handleApplyFilters = (filterData: any) => {
   performSearch();
 };
 
-const navigateToDetails = (id: number) => {
-  router.push({ name: 'record_details_page', params: { id } });
+// const navigateToDetails = (id: number) => {
+//   router.push({ name: 'record_details_page', params: { id } });
+// };
+
+const navigateToDetails = (item:object) => {
+  // Navigate using item object
+  router.push({
+    name: 'record_details_page',  // Route name
+    params: { id: item.primary_id }
+  });
+  
+  // Or using path
+  // router.push(`/articles/${item.primary_id}`);
 };
 
 // Lifecycle
